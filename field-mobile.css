@@ -1,0 +1,87 @@
+@media (max-width: 760px) {
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  header {
+    min-width: 0;
+  }
+
+  header nav,
+  #connectionState {
+    display: none;
+  }
+
+  .mark {
+    flex: 0 0 auto;
+  }
+
+  header > div:not(.mark) {
+    min-width: 0;
+  }
+
+  header strong {
+    font-size: 0.9rem;
+  }
+
+  header small {
+    font-size: 0.62rem;
+    overflow-wrap: anywhere;
+  }
+
+  .hero,
+  .info-grid,
+  .credits-grid,
+  .connections,
+  .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
+  }
+
+  .hero > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.65rem, 13vw, 3.25rem);
+    overflow-wrap: anywhere;
+  }
+
+  .hero-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+  }
+
+  .hero-actions button {
+    width: 100%;
+  }
+
+  .microcopy {
+    overflow-wrap: anywhere;
+  }
+
+  .invitation-card {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .invitation-card strong {
+    font-size: 1.65rem;
+    overflow-wrap: anywhere;
+  }
+
+  #composer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  footer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    overflow-wrap: anywhere;
+  }
+}
