@@ -1,0 +1,11 @@
+🦄 You’ve been chosen as one of The Unicorn’s first field testers for Unicorn Forge’s upcoming software alpha test — yay, so lucky! 🌈✨
+
+Unicorn Forge is a private, experimental AI workspace designed to chat, organize projects, use tools, and grow into a genuinely useful personal assistant. As an early tester, you’ll get your own isolated chat, memory, and personality profile. Your honest feedback will directly shape what works, what changes, and what ships.
+
+Important abridged notice: this is unfinished alpha software. Chats and test activity may be reviewed by The Unicorn for testing and model/app improvement. You’ll receive an original export and a redacted copy at the end of testing; original account data will then be deleted, while a de-identified version may be retained for training and evaluation. Please don’t enter secrets, financial information, medical records, or anything you would not want reviewed.
+
+To join, you’ll need your tester username and password, a Tailscale account approved for the private test network, and a few minutes for setup questions.
+
+Thank you for helping build something magical—and for being brave enough to test it before the glitter has settled. 🦄🎉
+
+Start here: https://jnthhrn8.github.io/unicornforge-field-console/
