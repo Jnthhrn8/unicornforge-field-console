@@ -211,6 +211,19 @@
             notification channel. Approval is not automatic.
           </p>
           <form id="accessRequestForm">
+            <label
+              >Private invitation address *<input
+                name="requestForgeUrl"
+                type="url"
+                inputmode="url"
+                required
+                autocomplete="off"
+                placeholder="Paste the private address from your invitation" /></label
+            >
+            <p class="empty">
+              Connect to the invited Tailscale network first. This address is
+              supplied privately by The Unicorn and is not published here.
+            </p>
             <div class="form-grid">
               <label
                 >Name *<input

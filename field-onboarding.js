@@ -22,8 +22,25 @@ document
     event.preventDefault();
     if (!document.querySelector("#consent").checked)
       return toast("Read and accept the field-test notice before requesting access");
+    const invitationAddress = String(
+      new FormData(event.currentTarget).get("requestForgeUrl") || "",
+    )
+      .trim()
+      .replace(/\/$/, "");
+    let parsedInvitationAddress;
+    try {
+      parsedInvitationAddress = new URL(invitationAddress);
+    } catch {
+      return toast("Paste the complete private address from your invitation");
+    }
+    if (
+      parsedInvitationAddress.protocol !== "https:" ||
+      !parsedInvitationAddress.hostname.toLowerCase().endsWith(".ts.net")
+    )
+      return toast("The invitation must use a private Tailscale HTTPS address");
+    document.querySelector("#tufUrl").value = invitationAddress;
     const node = urls()[0];
-    if (!node) return toast("A Forge address is required");
+    if (!node) return toast("The private invitation address is required");
     const identity = formRecord(event.currentTarget, [
       "name",
       "email",

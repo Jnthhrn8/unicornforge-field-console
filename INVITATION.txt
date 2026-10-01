@@ -4,7 +4,11 @@ Unicorn Forge is a private, experimental AI workspace designed to chat, organize
 
 Important abridged notice: this is unfinished alpha software. Chats and test activity may be reviewed by The Unicorn for testing and model/app improvement. You’ll receive an original export and a redacted copy at the end of testing; original account data will then be deleted, while a de-identified version may be retained for training and evaluation. Please don’t enter secrets, financial information, medical records, or anything you would not want reviewed.
 
-To join, you’ll need your tester username and password, a Tailscale account approved for the private test network, and a few minutes for setup questions.
+To apply, first accept the private Tailscale invitation and connect your device. Then open the field-test page and paste this private application address when requested:
+
+[PRIVATE FORGE APPLICATION ADDRESS]
+
+Do not forward or publish that address. After your completed entrance questions are reviewed and approved, you will receive a separate one-time enrollment code.
 
 Thank you for helping build something magical—and for being brave enough to test it before the glitter has settled. 🦄🎉
 
