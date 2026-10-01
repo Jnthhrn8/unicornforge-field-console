@@ -37,7 +37,7 @@ function renderPersonalityControls() {
   const available = [...personalityDrafts, ...(profile.learnedPersonality ? [profile.learnedPersonality] : [])];
   if (!available.some((item) => item.id === profile.activePersonalityId)) profile.activePersonalityId = personalityDrafts[0].id;
   const options = personalityDrafts.map((item) => `<option value="${esc(item.id)}">${esc(item.name)}</option>`).join("");
-  const activeOptions = `${options}${profile.learnedPersonality ? `<option value="growth-companion">🔒 ${esc(profile.learnedPersonality.name)} · learned</option>` : ''}`;
+  const activeOptions = `${options}${profile.learnedPersonality ? `<option value="${esc(profile.learnedPersonality.id)}">${esc(profile.learnedPersonality.name)}</option>` : ''}`;
   $("#chatPersonality").innerHTML = activeOptions;
   $("#chatPersonality").value = profile.activePersonalityId;
   $("#personalityEditor").innerHTML = options;
@@ -48,22 +48,11 @@ function renderPersonalityControls() {
   $("#personalityCount").textContent = `${personalityDrafts.length} of 4`;
   $("#newPersonality").disabled = personalityDrafts.length >= 4;
   $("#deletePersonality").disabled = personalityDrafts.length <= 1;
-  const readiness = profile.growthReadiness || {};
-  if (profile.learnedPersonality) {
-    $("#growthPersonalityStatus").textContent = `${profile.learnedPersonality.name} is ready. This protected personality evolves from interaction patterns and cannot be edited or deleted.`;
-    $("#growthPersonalityRationale").textContent = profile.learnedPersonality.rationale || "";
-  } else {
-    const required = readiness.requirements || { messages: 18, words: 700, sessions: 3 };
-    $("#growthPersonalityStatus").textContent = `Learning naturally: ${readiness.messages || 0}/${required.messages} messages, ${readiness.words || 0}/${required.words} words, and ${readiness.sessions || 0}/${required.sessions} distinct sessions. It unlocks only when all three are ready.`;
-    $("#growthPersonalityRationale").textContent = "It is designed for user-chosen growth—not time-in-app, dependency, or pressure to continue chatting.";
-  }
 }
 async function persistPersonalities(message = "Profile saved") {
   capturePersonalityEditor();
-  const readiness = profile.growthReadiness;
   const r = await api(active, "/api/field/profile", { memory: $("#memory").value, personalities: personalityDrafts, activePersonalityId: profile.activePersonalityId });
   profile = r.profile;
-  profile.growthReadiness = readiness;
   personalityDrafts = normalizedPersonalities(profile);
   renderPersonalityControls();
   toast(message);
@@ -172,7 +161,6 @@ async function refresh() {
     const editingProfile = $("#profilePanel").contains(document.activeElement);
     const r = await api(active, "/api/field/profile");
     profile = r.profile;
-    profile.growthReadiness = r.growthReadiness;
     if (r.feedbackPrompt && r.feedbackPrompt.token !== shownFeedbackToken) {
       shownFeedbackToken = r.feedbackPrompt.token;
       $("#feedbackQuestion").textContent = r.feedbackPrompt.question;
@@ -364,9 +352,12 @@ async function loadOwnerUser(username = selectedOwnerUser) {
       "/api/field/admin/user/" + encodeURIComponent(username),
     ),
     p = r.profile,
-    sessions = r.sessions || [];
+    sessions = r.sessions || [],
+    readiness = r.tailoredReadiness || { messages: 0, words: 0, sessions: 0, requirements: { messages: 18, words: 700, sessions: 3 } },
+    requirements = readiness.requirements || { messages: 18, words: 700, sessions: 3 },
+    tailoredStatus = p.learnedPersonality ? `<article class="admin-record"><strong>${esc(p.learnedPersonality.name)} · tailoring complete</strong><p><b>Adaptation rationale:</b> ${esc(p.learnedPersonality.rationale || "No rationale recorded.")}</p><small>Evidence at last adaptation: ${p.learnedPersonality.evidence?.messages || 0} messages · ${p.learnedPersonality.evidence?.words || 0} words · ${p.learnedPersonality.evidence?.sessions || 0} sessions</small></article>` : `<article class="admin-record"><strong>Tailoring readiness</strong><p>${readiness.messages || 0}/${requirements.messages} messages · ${readiness.words || 0}/${requirements.words} words · ${readiness.sessions || 0}/${requirements.sessions} sessions</p><small>The tester sees no preview or progress indicator.</small></article>`;
   $("#adminChat").innerHTML =
-    `<div class="owner-chat-heading"><div><h3>Live chat · ${esc(username)}</h3><p>${p.ownerTakeover ? "Human takeover active · model replies paused" : "Model replies active"} · ${r.access.enabled ? "Access enabled" : "Access disabled"} · ${sessions.length} live session(s)</p></div><div class="toolbar"><button class="ghost" data-owner-action="takeover">${p.ownerTakeover ? "Return to model" : "Take over chat"}</button><button class="ghost" data-owner-action="sessions">Revoke sessions</button><button class="danger" data-owner-action="access">${r.access.enabled ? "Disable access" : "Enable access"}</button></div></div><div class="owner-live-chat">${(
+    `<div class="owner-chat-heading"><div><h3>Live chat · ${esc(username)}</h3><p>${p.ownerTakeover ? "Human takeover active · model replies paused" : "Model replies active"} · ${r.access.enabled ? "Access enabled" : "Access disabled"} · ${sessions.length} live session(s)</p></div><div class="toolbar"><button class="ghost" data-owner-action="takeover">${p.ownerTakeover ? "Return to model" : "Take over chat"}</button><button class="ghost" data-owner-action="sessions">Revoke sessions</button><button class="danger" data-owner-action="access">${r.access.enabled ? "Disable access" : "Enable access"}</button></div></div><section><h3>Tailored personality</h3>${tailoredStatus}</section><div class="owner-live-chat">${(
       p.messages || []
     )
       .map(

@@ -70,7 +70,7 @@ document
       link.download = `UnicornForge-access-request-${identity.username}.json`;
       link.click();
       setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-      location.href = `mailto:tetheredunicorn@gmail.com?subject=${encodeURIComponent(`Private Unicorn Forge access request · @${identity.username}`)}&body=${encodeURIComponent("Hello The Unicorn,\n\nI would like to request private field-test access. I have attached the UnicornForge access-request JSON file that was just downloaded. I understand approval is not automatic or guaranteed.\n\nThank you.")}`;
+      location.href = `mailto:TetheredUnicorn@gmail.com?subject=${encodeURIComponent(`Private Unicorn Forge access request · @${identity.username}`)}&body=${encodeURIComponent("Hello The Unicorn,\n\nI would like to request private field-test access. I have attached the UnicornForge access-request JSON file that was just downloaded. I understand approval is not automatic or guaranteed.\n\nThank you.")}`;
       return toast("Request file downloaded; attach it to the private email that opened");
     }
     try {
