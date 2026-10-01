@@ -16,4 +16,5 @@
 .enrollment-code code { display: block; font-size: 1.4rem; color: var(--gold); margin: 0.65rem 0; user-select: all; }
 #adminAudit { max-height: 300px; overflow: auto; padding: 0.75rem; background: #090610; border-radius: 10px; overflow-wrap: anywhere; }
 hr { border: 0; border-top: 1px solid var(--line); margin: 1.5rem 0; }
+.role-badge { border: 1px solid var(--gold); border-radius: 999px; color: var(--gold); padding: .45rem .7rem; font-weight: 900; letter-spacing: .08em; }
 @media(max-width:760px){.owner-chat-heading{display:block}}

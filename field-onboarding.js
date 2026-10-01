@@ -24,15 +24,36 @@ document
       return toast("Read and accept the field-test notice before requesting access");
     const node = urls()[0];
     if (!node) return toast("A Forge address is required");
-    const request = formRecord(event.currentTarget, [
+    const identity = formRecord(event.currentTarget, [
       "name",
       "email",
       "phone",
       "username",
       "reason",
+      "deliveryMethod",
+    ]);
+    const onboarding = formRecord(event.currentTarget, [
+      "goals",
+      "communicationStyle",
+      "experience",
+      "assistantStyle",
+      "accessibility",
+    ]);
+    const feedback = formRecord(event.currentTarget, [
+      "devices",
+      "workflows",
+      "frustrations",
+      "mustHave",
+      "privacyComfort",
+      "testingAvailability",
+      "other",
     ]);
     try {
-      await raw(node, "/api/field/access-request", request);
+      await raw(node, "/api/field/access-request", {
+        ...identity,
+        onboarding,
+        feedback,
+      });
       event.currentTarget.reset();
       toast("Request sent to The Unicorn through ntfy");
     } catch (error) {

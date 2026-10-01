@@ -125,6 +125,9 @@ async function refresh() {
     if (profile.model) $("#model").value = profile.model;
     $("#memory").value = profile.memory || "";
     $("#personality").value = profile.personality || "";
+    $("#profileRole").hidden = profile.role !== "owner";
+    $("#profileRole").textContent = profile.role === "owner" ? "THE UNICORN · OWNER" : "";
+    $("#ownerFromChat").hidden = profile.role !== "owner";
     $("#send").disabled = r.running;
     render();
   } catch (e) {
@@ -264,6 +267,10 @@ let ownerNode = null,
 async function ownerRequest(path, body) {
   return raw(ownerNode, path, body, { "X-Field-Admin": ownerToken });
 }
+async function refreshMessagingStatus() {
+  const state = await ownerRequest("/api/field/admin/messaging");
+  $("#messagingStatus").textContent = `Email: ${state.emailConfigured ? "configured " + state.fromEmail : "not configured"} · Text: ${state.smsConfigured ? "configured " + state.fromPhone : "not configured"}`;
+}
 async function loadOwnerUser(username = selectedOwnerUser) {
   if (!username) return;
   selectedOwnerUser = username;
@@ -318,6 +325,7 @@ async function loadOwnerUser(username = selectedOwnerUser) {
       enabled: !r.access.enabled,
     });
     await refreshOwner();
+    await refreshMessagingStatus();
   };
 }
 async function refreshOwner() {
@@ -328,7 +336,7 @@ async function refreshOwner() {
   $("#toggleTraffic").dataset.enabled = String(v.trafficEnabled);
   const pending = (v.requests || []).filter((r) => r.status === "pending");
   $("#adminStats").innerHTML =
-    `<p><strong>${v.trafficEnabled ? "ACCEPTING TRAFFIC" : "TRAFFIC STOPPED"}</strong> · ${v.running.length} running jobs · ${v.sessions.length} connected devices · ${pending.length} pending requests</p><section><h3>Access requests</h3><div id="accessRequests">${pending.map((r) => `<article class="admin-record"><strong>${esc(r.name)} · @${esc(r.username)}</strong><small>${esc(r.email)} · ${esc(r.phone || "No phone")} · ${new Date(r.createdAt).toLocaleString()}</small><p>${esc(r.reason)}</p><button data-approve-request="${esc(r.id)}">Approve with one-time code</button><button class="danger" data-deny-request="${esc(r.id)}">Deny</button></article>`).join("") || '<p class="empty">No pending requests.</p>'}</div><div id="enrollmentCode">${lastEnrollmentCode}</div></section>`;
+    `<p><strong>${v.trafficEnabled ? "ACCEPTING TRAFFIC" : "TRAFFIC STOPPED"}</strong> · ${v.running.length} running jobs · ${v.sessions.length} connected devices · ${pending.length} pending requests</p><section><h3>Access requests</h3><div id="accessRequests">${pending.map((r) => `<article class="admin-record"><strong>${esc(r.name)} · @${esc(r.username)}</strong><small>${esc(r.email)} · ${esc(r.phone || "No phone")} · prefers ${esc(r.deliveryMethod || "unspecified")} · ${new Date(r.createdAt).toLocaleString()}</small><p><b>Why:</b> ${esc(r.reason)}</p><p><b>Goals:</b> ${esc(r.onboarding?.goals)}<br><b>Style / experience:</b> ${esc(r.onboarding?.communicationStyle)} · ${esc(r.onboarding?.experience)}<br><b>Devices:</b> ${esc(r.feedback?.devices)}<br><b>Workflows:</b> ${esc(r.feedback?.workflows)}<br><b>Frustrations:</b> ${esc(r.feedback?.frustrations)}<br><b>Must-have:</b> ${esc(r.feedback?.mustHave)}<br><b>Data comfort:</b> ${esc(r.feedback?.privacyComfort)} · <b>Availability:</b> ${esc(r.feedback?.testingAvailability)}</p><button data-approve-request="${esc(r.id)}">Approve with one-time code</button><button class="danger" data-deny-request="${esc(r.id)}">Deny</button></article>`).join("") || '<p class="empty">No pending requests.</p>'}</div><div id="enrollmentCode">${lastEnrollmentCode}</div></section>`;
   $("#adminDevices").innerHTML =
     v.sessions
       .map(
@@ -352,15 +360,22 @@ async function refreshOwner() {
   document
     .querySelectorAll("[data-owner-user]")
     .forEach((b) => (b.onclick = () => loadOwnerUser(b.dataset.ownerUser)));
+  document
+    .querySelectorAll("[data-approve-request]")
+    .forEach((b) => (b.textContent = "Approve & send welcome"));
   document.querySelectorAll("[data-approve-request]").forEach(
     (b) =>
       (b.onclick = async () => {
-        const r = await ownerRequest(
-          "/api/field/admin/access-request/approve",
-          { id: b.dataset.approveRequest },
-        );
-        lastEnrollmentCode = `<div class="enrollment-code"><strong>One-time enrollment code for @${esc(r.request.username)}</strong><code>${esc(r.enrollmentCode)}</code><p>Copy this now and send it to the tester. It will not be shown again.</p></div>`;
-        await refreshOwner();
+        try {
+          const r = await ownerRequest(
+            "/api/field/admin/access-request/approve",
+            { id: b.dataset.approveRequest },
+          );
+          lastEnrollmentCode = `<div class="enrollment-code"><strong>@${esc(r.request.username)} approved</strong><p>Welcome message and one-time enrollment code delivered by ${esc(r.delivery.destination)} at ${new Date(r.delivery.sentAt).toLocaleString()}.</p></div>`;
+          await refreshOwner();
+        } catch (error) {
+          toast(error.message);
+        }
       }),
   );
   document.querySelectorAll("[data-deny-request]").forEach(
@@ -390,7 +405,20 @@ $("#ownerConsole").onclick = async () => {
     toast(e.message);
   }
 };
+$("#ownerFromChat").onclick = () => $("#ownerConsole").click();
 $("#refreshAdmin").onclick = refreshOwner;
+$("#messagingConfigForm").onsubmit = async (event) => {
+  event.preventDefault();
+  const values = Object.fromEntries(new FormData(event.currentTarget));
+  try {
+    await ownerRequest("/api/field/admin/messaging", values);
+    event.currentTarget.reset();
+    await refreshMessagingStatus();
+    toast("Encrypted welcome delivery settings saved");
+  } catch (error) {
+    toast(error.message);
+  }
+};
 $("#toggleTraffic").onclick = async () => {
   await ownerRequest("/api/field/admin/traffic", {
     enabled: $("#toggleTraffic").dataset.enabled !== "true",

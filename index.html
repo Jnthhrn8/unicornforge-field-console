@@ -239,14 +239,34 @@
                   required
                   placeholder="lowercase only"
               /></label>
+              <label
+                >Welcome confirmation *<select name="deliveryMethod" required>
+                  <option value="email">Email</option>
+                  <option value="sms">Text message</option>
+                </select></label
+              >
             </div>
             <label
               >Why would you like to test Unicorn Forge? *<textarea
                 name="reason"
                 maxlength="2000"
                 required
-              ></textarea></label
-            ><button type="submit">Send access request</button>
+              ></textarea></label>
+            <fieldset>
+              <legend>Pre-personalize your Forge</legend>
+              <label>What should your assistant help you accomplish? *<textarea name="goals" maxlength="2000" required></textarea></label>
+              <div class="form-grid"><label>Communication style *<select name="communicationStyle" required><option>Concise and direct</option><option>Friendly and explanatory</option><option>Detailed and technical</option><option>Ask before assuming</option><option>Adapt to the task</option></select></label><label>AI experience *<select name="experience" required><option>New to AI assistants</option><option>Occasional user</option><option>Frequent user</option><option>Power user / developer</option></select></label><label>Desired assistant personality<input name="assistantStyle" maxlength="800"></label><label>Accessibility needs<input name="accessibility" maxlength="1200"></label></div>
+            </fieldset>
+            <fieldset>
+              <legend>Help tune the app before release</legend>
+              <label>Devices and operating systems *<input name="devices" maxlength="800" required></label>
+              <label>Real workflows Forge should handle *<textarea name="workflows" maxlength="1600" required></textarea></label>
+              <label>What frustrates you about current AI tools? *<textarea name="frustrations" maxlength="2000" required></textarea></label>
+              <label>One must-have capability for release *<textarea name="mustHave" maxlength="2000" required></textarea></label>
+              <div class="form-grid"><label>Comfort with these data practices *<select name="privacyComfort" required><option>Comfortable</option><option>Comfortable with questions</option><option>Unsure—please contact me</option></select></label><label>Testing availability *<input name="testingAvailability" maxlength="800" required></label></div>
+              <label>Anything else?<textarea name="other" maxlength="2000"></textarea></label>
+            </fieldset>
+            <button type="submit">Send completed access request</button>
           </form>
         </details>
         <details class="access-flow">
@@ -522,6 +542,7 @@
           ><button id="closeAdmin" class="ghost">Close</button>
         </div>
         <div id="adminStats"></div>
+        <details class="access-flow"><summary>Welcome delivery settings</summary><p>Configure one or both providers. Credentials are encrypted locally and are never displayed again.</p><form id="messagingConfigForm"><fieldset><legend>Email · Resend</legend><div class="form-grid"><label>Verified from address<input name="fromEmail" type="email" placeholder="Unicorn Forge &lt;welcome@example.com&gt;"></label><label>Resend API key<input name="resendApiKey" type="password" autocomplete="new-password"></label></div></fieldset><fieldset><legend>Text messages · Twilio</legend><div class="form-grid"><label>Account SID<input name="twilioAccountSid" autocomplete="off"></label><label>Auth token<input name="twilioAuthToken" type="password" autocomplete="new-password"></label><label>Sending phone number<input name="fromPhone" type="tel" placeholder="+15551234567"></label></div></fieldset><button type="submit">Save encrypted delivery settings</button><p id="messagingStatus" class="empty"></p></form></details>
         <div class="connections">
           <section>
             <h3>Connected devices</h3>
@@ -557,6 +578,8 @@
               <option value="team">Always team</option>
               <option value="shared">Share resources</option>
             </select></label
+          ><span id="profileRole" class="role-badge" hidden></span
+          ><button id="ownerFromChat" class="ghost" hidden>Owner console</button
           ><button id="settings" class="ghost">Memory &amp; personality</button
           ><button id="clear" class="ghost">Clear chat</button
           ><button id="logout" class="danger">Log out</button>
