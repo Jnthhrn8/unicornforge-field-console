@@ -95,7 +95,7 @@
             <h3>What you receive</h3>
             <p>
               One isolated tester account with one chat, personal memory,
-              personality settings, live task activity, and access to whichever
+              up to four named personalities, live task activity, and access to whichever
               Forge computer is online.
             </p>
           </article>
@@ -214,8 +214,8 @@
         <p class="eyebrow">PRIVATE ACCESS</p>
         <h1>Tester access</h1>
         <p>
-          Each tester receives exactly one isolated chat, memory, and
-          personality. Normal Forge data is never available here.
+          Each tester receives exactly one isolated chat, memory, and up to four
+          switchable personalities. Normal Forge data is never available here.
         </p>
         <details class="access-flow" open>
           <summary>Request an invitation</summary>
@@ -597,6 +597,7 @@
         <div class="toolbar">
           <label>Active computer<select id="computer"></select></label
           ><label>Model<select id="model"></select></label
+          ><label>Personality<select id="chatPersonality"></select></label
           ><label
             >Task mode<select id="runMode">
               <option value="single">Single model</option>
@@ -617,13 +618,23 @@
               rows="5"
               maxlength="16000"
             ></textarea></label
-          ><label
-            >Personality<textarea
-              id="personality"
-              rows="5"
-              maxlength="12000"
-            ></textarea></label
-          ><button id="saveProfile">Save profile</button>
+          ><fieldset class="personality-editor">
+            <legend>Personality studio · up to 4</legend>
+            <div class="form-grid">
+              <label>Edit personality<select id="personalityEditor"></select></label>
+              <label>Name<input id="personalityName" maxlength="40" placeholder="Let the AI choose or enter a name" /></label>
+            </div>
+            <label>Describe how this personality should think and speak<textarea id="personalityDescription" rows="5" maxlength="4000" placeholder="Candid, playful, concise, willing to disagree…"></textarea></label>
+            <p class="empty">Personality changes style and identity, but never removes Forge’s honesty, safety, or anti-sycophancy rules.</p>
+            <div class="toolbar">
+              <button id="namePersonality" type="button" class="ghost">Let this AI name itself</button>
+              <button id="newPersonality" type="button" class="ghost">New personality</button>
+              <button id="usePersonality" type="button" class="ghost">Use this personality</button>
+              <button id="deletePersonality" type="button" class="danger">Delete</button>
+              <span id="personalityCount" class="empty"></span>
+            </div>
+          </fieldset>
+          <button id="saveProfile">Save profile</button>
         </section>
         <section id="messages" class="messages">
           <p class="empty">Your private tester chat is empty.</p>

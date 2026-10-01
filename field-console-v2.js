@@ -15,7 +15,45 @@ const $ = (s) => document.querySelector(s),
 let nodes = [],
   active = null,
   profile = { messages: [] },
+  personalityDrafts = [],
+  editingPersonalityId = "",
   timer;
+function normalizedPersonalities(value = profile) {
+  const source = Array.isArray(value.personalities) && value.personalities.length
+    ? value.personalities.slice(0, 4)
+    : [{ id: "forge", name: "Forge", instructions: value.personality || value.onboarding?.assistantStyle || "" }];
+  return source.map((item, index) => ({ id: String(item.id || `personality-${index + 1}`), name: String(item.name || `Personality ${index + 1}`).slice(0, 40), instructions: String(item.instructions || "").slice(0, 4000), createdAt: Number(item.createdAt || Date.now()) }));
+}
+function capturePersonalityEditor() {
+  const item = personalityDrafts.find((entry) => entry.id === editingPersonalityId);
+  if (!item || !$("#personalityName")) return;
+  item.name = $("#personalityName").value.trim().slice(0, 40) || "Unnamed personality";
+  item.instructions = $("#personalityDescription").value.trim().slice(0, 4000);
+}
+function renderPersonalityControls() {
+  if (!personalityDrafts.length) personalityDrafts = normalizedPersonalities();
+  if (!personalityDrafts.some((item) => item.id === editingPersonalityId)) editingPersonalityId = personalityDrafts[0].id;
+  if (!personalityDrafts.some((item) => item.id === profile.activePersonalityId)) profile.activePersonalityId = personalityDrafts[0].id;
+  const options = personalityDrafts.map((item) => `<option value="${esc(item.id)}">${esc(item.name)}</option>`).join("");
+  $("#chatPersonality").innerHTML = options;
+  $("#chatPersonality").value = profile.activePersonalityId;
+  $("#personalityEditor").innerHTML = options;
+  $("#personalityEditor").value = editingPersonalityId;
+  const current = personalityDrafts.find((item) => item.id === editingPersonalityId);
+  $("#personalityName").value = current?.name || "";
+  $("#personalityDescription").value = current?.instructions || "";
+  $("#personalityCount").textContent = `${personalityDrafts.length} of 4`;
+  $("#newPersonality").disabled = personalityDrafts.length >= 4;
+  $("#deletePersonality").disabled = personalityDrafts.length <= 1;
+}
+async function persistPersonalities(message = "Profile saved") {
+  capturePersonalityEditor();
+  const r = await api(active, "/api/field/profile", { memory: $("#memory").value, personalities: personalityDrafts, activePersonalityId: profile.activePersonalityId });
+  profile = r.profile;
+  personalityDrafts = normalizedPersonalities(profile);
+  renderPersonalityControls();
+  toast(message);
+}
 const b64ToBuf = (s) =>
   Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/")), (c) =>
     c.charCodeAt(0),
@@ -117,14 +155,19 @@ async function openConsole() {
 async function refresh() {
   if (!active) return;
   try {
+    const editingProfile = $("#profilePanel").contains(document.activeElement);
     const r = await api(active, "/api/field/profile");
     profile = r.profile;
     $("#model").innerHTML = r.models
       .map((m) => `<option value="${esc(m.name)}">${esc(m.name)}</option>`)
       .join("");
     if (profile.model) $("#model").value = profile.model;
-    $("#memory").value = profile.memory || "";
-    $("#personality").value = profile.personality || "";
+    if (!editingProfile) {
+      $("#memory").value = profile.memory || "";
+      personalityDrafts = normalizedPersonalities(profile);
+      editingPersonalityId = personalityDrafts.some((item) => item.id === editingPersonalityId) ? editingPersonalityId : profile.activePersonalityId;
+      renderPersonalityControls();
+    }
     $("#profileRole").hidden = profile.role !== "owner";
     $("#profileRole").textContent = profile.role === "owner" ? "THE UNICORN · OWNER" : "";
     $("#ownerFromChat").hidden = profile.role !== "owner";
@@ -140,7 +183,7 @@ function render() {
     ? m
         .map(
           (x) =>
-            `<article class="message ${esc(x.role)}${x.human ? " human" : ""}"><small>${x.role === "user" ? "YOU" : x.human ? "THE UNICORN · HUMAN REPLY" : esc(x.model || "FORGE")}${x.pending ? " · LIVE" : ""}</small>${esc(x.text)}${
+            `<article class="message ${esc(x.role)}${x.human ? " human" : ""}"><small>${x.role === "user" ? "YOU" : x.human ? "THE UNICORN · HUMAN REPLY" : `${esc(x.personalityName || "FORGE")} · ${esc(x.model || "LOCAL MODEL")}`}${x.pending ? " · LIVE" : ""}</small>${esc(x.text)}${
               x.activity?.length
                 ? `<div class="activity">${x.activity
                     .slice(-10)
@@ -212,13 +255,36 @@ $("#computer").onchange = () => {
 };
 $("#settings").onclick = () =>
   ($("#profilePanel").hidden = !$("#profilePanel").hidden);
-$("#saveProfile").onclick = async () => {
-  const r = await api(active, "/api/field/profile", {
-    memory: $("#memory").value,
-    personality: $("#personality").value,
-  });
-  profile = r.profile;
-  toast("Memory and personality saved");
+$("#saveProfile").onclick = () => persistPersonalities("Memory and personalities saved").catch((error) => toast(error.message));
+$("#personalityEditor").onchange = () => { capturePersonalityEditor(); editingPersonalityId = $("#personalityEditor").value; renderPersonalityControls(); };
+$("#newPersonality").onclick = () => {
+  capturePersonalityEditor();
+  if (personalityDrafts.length >= 4) return toast("Each tester can have up to four personalities");
+  const id = `personality-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+  personalityDrafts.push({ id, name: `Personality ${personalityDrafts.length + 1}`, instructions: "", createdAt: Date.now() });
+  editingPersonalityId = id;
+  renderPersonalityControls();
+  $("#personalityDescription").focus();
+};
+$("#deletePersonality").onclick = async () => {
+  if (personalityDrafts.length <= 1) return toast("Keep at least one personality");
+  const current = personalityDrafts.find((item) => item.id === editingPersonalityId);
+  if (!confirm(`Delete ${current?.name || "this personality"}?`)) return;
+  personalityDrafts = personalityDrafts.filter((item) => item.id !== editingPersonalityId);
+  editingPersonalityId = personalityDrafts[0].id;
+  if (!personalityDrafts.some((item) => item.id === profile.activePersonalityId)) profile.activePersonalityId = editingPersonalityId;
+  await persistPersonalities("Personality deleted").catch((error) => toast(error.message));
+};
+$("#usePersonality").onclick = async () => { capturePersonalityEditor(); profile.activePersonalityId = editingPersonalityId; await persistPersonalities("Active personality changed").catch((error) => toast(error.message)); };
+$("#chatPersonality").onchange = async () => { capturePersonalityEditor(); profile.activePersonalityId = $("#chatPersonality").value; await persistPersonalities("Active personality changed").catch((error) => toast(error.message)); };
+$("#namePersonality").onclick = async () => {
+  capturePersonalityEditor();
+  const item = personalityDrafts.find((entry) => entry.id === editingPersonalityId);
+  if (!item?.instructions) return toast("Describe the personality first");
+  const button = $("#namePersonality"); button.disabled = true; button.textContent = "Choosing a name…";
+  try { const result = await api(active, "/api/field/personality/name", { description: item.instructions, model: $("#model").value }); item.name = result.name; renderPersonalityControls(); toast(`${result.name} chose its name`); }
+  catch (error) { toast(error.message); }
+  finally { button.disabled = false; button.textContent = "Let this AI name itself"; }
 };
 $("#clear").onclick = async () => {
   if (confirm("Clear your field-test chat?")) {
