@@ -267,10 +267,6 @@ let ownerNode = null,
 async function ownerRequest(path, body) {
   return raw(ownerNode, path, body, { "X-Field-Admin": ownerToken });
 }
-async function refreshMessagingStatus() {
-  const state = await ownerRequest("/api/field/admin/messaging");
-  $("#messagingStatus").textContent = `Email: ${state.emailConfigured ? "configured " + state.fromEmail : "not configured"} · Text: ${state.smsConfigured ? "configured " + state.fromPhone : "not configured"}`;
-}
 async function loadOwnerUser(username = selectedOwnerUser) {
   if (!username) return;
   selectedOwnerUser = username;
@@ -325,7 +321,6 @@ async function loadOwnerUser(username = selectedOwnerUser) {
       enabled: !r.access.enabled,
     });
     await refreshOwner();
-    await refreshMessagingStatus();
   };
 }
 async function refreshOwner() {
@@ -336,7 +331,7 @@ async function refreshOwner() {
   $("#toggleTraffic").dataset.enabled = String(v.trafficEnabled);
   const pending = (v.requests || []).filter((r) => r.status === "pending");
   $("#adminStats").innerHTML =
-    `<p><strong>${v.trafficEnabled ? "ACCEPTING TRAFFIC" : "TRAFFIC STOPPED"}</strong> · ${v.running.length} running jobs · ${v.sessions.length} connected devices · ${pending.length} pending requests</p><section><h3>Access requests</h3><div id="accessRequests">${pending.map((r) => `<article class="admin-record"><strong>${esc(r.name)} · @${esc(r.username)}</strong><small>${esc(r.email)} · ${esc(r.phone || "No phone")} · prefers ${esc(r.deliveryMethod || "unspecified")} · ${new Date(r.createdAt).toLocaleString()}</small><p><b>Why:</b> ${esc(r.reason)}</p><p><b>Goals:</b> ${esc(r.onboarding?.goals)}<br><b>Style / experience:</b> ${esc(r.onboarding?.communicationStyle)} · ${esc(r.onboarding?.experience)}<br><b>Devices:</b> ${esc(r.feedback?.devices)}<br><b>Workflows:</b> ${esc(r.feedback?.workflows)}<br><b>Frustrations:</b> ${esc(r.feedback?.frustrations)}<br><b>Must-have:</b> ${esc(r.feedback?.mustHave)}<br><b>Data comfort:</b> ${esc(r.feedback?.privacyComfort)} · <b>Availability:</b> ${esc(r.feedback?.testingAvailability)}</p><button data-approve-request="${esc(r.id)}">Approve with one-time code</button><button class="danger" data-deny-request="${esc(r.id)}">Deny</button></article>`).join("") || '<p class="empty">No pending requests.</p>'}</div><div id="enrollmentCode">${lastEnrollmentCode}</div></section>`;
+    `<p><strong>${v.trafficEnabled ? "ACCEPTING TRAFFIC" : "TRAFFIC STOPPED"}</strong> · ${v.running.length} running jobs · ${v.sessions.length} connected devices · ${pending.length} pending requests</p><section><h3>Access requests</h3><div id="accessRequests">${pending.map((r) => `<article class="admin-record"><strong>${esc(r.name)} · @${esc(r.username)}</strong><small>${esc(r.email)} · ${esc(r.phone || "No phone")} · private ntfy enrollment · ${new Date(r.createdAt).toLocaleString()}</small><p><b>Why:</b> ${esc(r.reason)}</p><p><b>Goals:</b> ${esc(r.onboarding?.goals)}<br><b>Style / experience:</b> ${esc(r.onboarding?.communicationStyle)} · ${esc(r.onboarding?.experience)}<br><b>Devices:</b> ${esc(r.feedback?.devices)}<br><b>Workflows:</b> ${esc(r.feedback?.workflows)}<br><b>Frustrations:</b> ${esc(r.feedback?.frustrations)}<br><b>Must-have:</b> ${esc(r.feedback?.mustHave)}<br><b>Data comfort:</b> ${esc(r.feedback?.privacyComfort)} · <b>Availability:</b> ${esc(r.feedback?.testingAvailability)}</p><button data-approve-request="${esc(r.id)}">Approve & create ntfy package</button><button class="danger" data-deny-request="${esc(r.id)}">Deny</button></article>`).join("") || '<p class="empty">No pending requests.</p>'}</div><div id="enrollmentCode">${lastEnrollmentCode}</div></section>`;
   $("#adminDevices").innerHTML =
     v.sessions
       .map(
@@ -362,7 +357,7 @@ async function refreshOwner() {
     .forEach((b) => (b.onclick = () => loadOwnerUser(b.dataset.ownerUser)));
   document
     .querySelectorAll("[data-approve-request]")
-    .forEach((b) => (b.textContent = "Approve & send welcome"));
+    .forEach((b) => (b.textContent = "Approve & create ntfy package"));
   document.querySelectorAll("[data-approve-request]").forEach(
     (b) =>
       (b.onclick = async () => {
@@ -371,8 +366,12 @@ async function refreshOwner() {
             "/api/field/admin/access-request/approve",
             { id: b.dataset.approveRequest },
           );
-          lastEnrollmentCode = `<div class="enrollment-code"><strong>@${esc(r.request.username)} approved</strong><p>Welcome message and one-time enrollment code delivered by ${esc(r.delivery.destination)} at ${new Date(r.delivery.sentAt).toLocaleString()}.</p></div>`;
+          lastEnrollmentCode = `<div class="enrollment-code"><strong>@${esc(r.request.username)} approved</strong><p>The private ntfy enrollment package was created at ${new Date(r.delivery.sentAt).toLocaleString()}. Send it only to the approved user.</p><label>Private welcome letter<textarea id="approvedEnrollmentLetter" readonly>${esc(r.enrollment?.letter || "Open the private ntfy notification to retrieve the enrollment package.")}</textarea></label><button type="button" data-copy-enrollment>Copy private letter</button><p class="empty">Do not publish this letter, address, or one-time code.</p></div>`;
           await refreshOwner();
+          document.querySelector("[data-copy-enrollment]")?.addEventListener("click", async () => {
+            await navigator.clipboard.writeText(document.querySelector("#approvedEnrollmentLetter")?.value || "");
+            toast("Private welcome letter copied");
+          });
         } catch (error) {
           toast(error.message);
         }
@@ -407,18 +406,6 @@ $("#ownerConsole").onclick = async () => {
 };
 $("#ownerFromChat").onclick = () => $("#ownerConsole").click();
 $("#refreshAdmin").onclick = refreshOwner;
-$("#messagingConfigForm").onsubmit = async (event) => {
-  event.preventDefault();
-  const values = Object.fromEntries(new FormData(event.currentTarget));
-  try {
-    await ownerRequest("/api/field/admin/messaging", values);
-    event.currentTarget.reset();
-    await refreshMessagingStatus();
-    toast("Encrypted welcome delivery settings saved");
-  } catch (error) {
-    toast(error.message);
-  }
-};
 $("#toggleTraffic").onclick = async () => {
   await ownerRequest("/api/field/admin/traffic", {
     enabled: $("#toggleTraffic").dataset.enabled !== "true",

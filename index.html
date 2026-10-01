@@ -240,10 +240,10 @@
                   placeholder="lowercase only"
               /></label>
               <label
-                >Welcome confirmation *<select name="deliveryMethod" required>
-                  <option value="email">Email</option>
-                  <option value="sms">Text message</option>
-                </select></label
+                >Approval notifications<input
+                  value="Private ntfy enrollment"
+                  readonly
+                  aria-label="Approval notifications use private ntfy enrollment" /></label
               >
             </div>
             <label
@@ -310,19 +310,19 @@
           <fieldset>
             <legend>TUF</legend>
             <label
-              >Tailscale HTTPS address<input
+              >Private Forge address<input
                 id="tufUrl"
                 inputmode="url"
-                value="https://tuf-unicorn.tail0e71ff.ts.net:3211" /></label
+                placeholder="Provided in your approval letter" /></label
             ><span id="tufState">Not checked</span>
           </fieldset>
           <fieldset>
             <legend>STRIX</legend>
             <label
-              >Tailscale HTTPS address<input
+              >Private Forge address<input
                 id="strixUrl"
                 inputmode="url"
-                value="https://unicorn-strix.tail0e71ff.ts.net:3211" /></label
+                placeholder="Optional second approved Forge address" /></label
             ><span id="strixState">Not checked</span>
           </fieldset>
         </div>
@@ -542,7 +542,7 @@
           ><button id="closeAdmin" class="ghost">Close</button>
         </div>
         <div id="adminStats"></div>
-        <details class="access-flow"><summary>Welcome delivery settings</summary><p>Configure one or both providers. Credentials are encrypted locally and are never displayed again.</p><form id="messagingConfigForm"><fieldset><legend>Email · Resend</legend><div class="form-grid"><label>Verified from address<input name="fromEmail" type="email" placeholder="Unicorn Forge &lt;welcome@example.com&gt;"></label><label>Resend API key<input name="resendApiKey" type="password" autocomplete="new-password"></label></div></fieldset><fieldset><legend>Text messages · Twilio</legend><div class="form-grid"><label>Account SID<input name="twilioAccountSid" autocomplete="off"></label><label>Auth token<input name="twilioAuthToken" type="password" autocomplete="new-password"></label><label>Sending phone number<input name="fromPhone" type="tel" placeholder="+15551234567"></label></div></fieldset><button type="submit">Save encrypted delivery settings</button><p id="messagingStatus" class="empty"></p></form></details>
+        <details class="access-flow"><summary>Private ntfy enrollment</summary><p>Access requests and approval packages use the bundled private ntfy service. No paid email or SMS provider is used. Private Forge and ntfy addresses are included only after approval and are never published on this site.</p><p id="messagingStatus" class="empty">ntfy status is reported by the private Forge host.</p></details>
         <div class="connections">
           <section>
             <h3>Connected devices</h3>

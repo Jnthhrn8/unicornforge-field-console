@@ -30,7 +30,6 @@ document
       "phone",
       "username",
       "reason",
-      "deliveryMethod",
     ]);
     const onboarding = formRecord(event.currentTarget, [
       "goals",
@@ -51,6 +50,7 @@ document
     try {
       await raw(node, "/api/field/access-request", {
         ...identity,
+        deliveryMethod: "ntfy",
         onboarding,
         feedback,
       });
