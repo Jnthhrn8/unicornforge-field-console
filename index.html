@@ -224,23 +224,16 @@
         <details class="access-flow" open>
           <summary>Request an invitation</summary>
           <p>
-            Your request is sent to The Unicorn through the private ntfy
-            notification channel. Approval is not automatic.
+            Your request is sent to The Unicorn through the private notification
+            channel. Approval is not automatic or guaranteed.
           </p>
           <form id="accessRequestForm">
-            <label
-              >Private invitation address *<input
-                name="requestForgeUrl"
-                type="url"
-                inputmode="url"
-                required
-                autocomplete="off"
-                placeholder="Paste the private address from your invitation" /></label
-            >
-            <p class="empty">
-              Connect to the invited Tailscale network first. This address is
-              supplied privately by The Unicorn and is not published here.
-            </p>
+            <label class="remember"><input id="hasInvitationAddress" name="hasInvitationAddress" type="checkbox" /> I already have a private invitation address</label>
+            <p id="noInvitationAddress" class="empty">If you are chosen, a private address and connection instructions will be sent to you. You can continue this request now; submitting it will open your email app so you can privately send it to The Unicorn.</p>
+            <div id="invitationAddressFields" hidden>
+              <label>Private invitation address *<input name="requestForgeUrl" type="url" inputmode="url" autocomplete="off" placeholder="Paste the private address from your invitation" /></label>
+              <p class="empty">Connect to the invited Tailscale network first. This address is supplied privately by The Unicorn and is not published here.</p>
+            </div>
             <div class="form-grid">
               <label
                 >Name *<input
@@ -612,6 +605,7 @@
           ><span id="profileRole" class="role-badge" hidden></span
           ><button id="ownerFromChat" class="ghost" hidden>Owner console</button
           ><button id="settings" class="ghost">Memory &amp; personality</button
+          ><button id="feedback" class="ghost">Send feedback</button
           ><button id="clear" class="ghost">Clear chat</button
           ><button id="logout" class="danger">Log out</button>
         </div>
@@ -645,6 +639,15 @@
           </aside>
           <button id="saveProfile">Save profile</button>
         </section>
+        <aside id="feedbackPanel" class="legal-card" hidden>
+          <div class="toolbar"><h3>Feedback to The Unicorn</h3><button id="closeFeedback" type="button" class="ghost">Close</button></div>
+          <p id="feedbackQuestion">What should Unicorn Forge improve?</p>
+          <form id="feedbackForm">
+            <textarea id="feedbackMessage" rows="4" maxlength="4000" required placeholder="Tell The Unicorn what worked, what failed, or what would make this more useful…"></textarea>
+            <button type="submit">Send privately</button>
+            <button id="dismissFeedback" type="button" class="ghost">Not now</button>
+          </form>
+        </aside>
         <section id="messages" class="messages">
           <p class="empty">Your private tester chat is empty.</p>
         </section>

@@ -17,6 +17,7 @@ let nodes = [],
   profile = { messages: [] },
   personalityDrafts = [],
   editingPersonalityId = "",
+  shownFeedbackToken = "",
   timer;
 function normalizedPersonalities(value = profile) {
   const source = Array.isArray(value.personalities) && value.personalities.length
@@ -172,6 +173,11 @@ async function refresh() {
     const r = await api(active, "/api/field/profile");
     profile = r.profile;
     profile.growthReadiness = r.growthReadiness;
+    if (r.feedbackPrompt && r.feedbackPrompt.token !== shownFeedbackToken) {
+      shownFeedbackToken = r.feedbackPrompt.token;
+      $("#feedbackQuestion").textContent = r.feedbackPrompt.question;
+      $("#feedbackPanel").hidden = false;
+    }
     $("#model").innerHTML = r.models
       .map((m) => `<option value="${esc(m.name)}">${esc(m.name)}</option>`)
       .join("");
@@ -269,6 +275,10 @@ $("#computer").onchange = () => {
 };
 $("#settings").onclick = () =>
   ($("#profilePanel").hidden = !$("#profilePanel").hidden);
+$("#feedback").onclick = () => { $("#feedbackQuestion").textContent = "What should Unicorn Forge improve?"; $("#feedbackPanel").hidden = false; $("#feedbackMessage").focus(); };
+$("#closeFeedback").onclick = () => ($("#feedbackPanel").hidden = true);
+$("#feedbackForm").onsubmit = async (event) => { event.preventDefault(); try { await api(active, "/api/field/feedback", { question: $("#feedbackQuestion").textContent, message: $("#feedbackMessage").value }); $("#feedbackMessage").value = ""; $("#feedbackPanel").hidden = true; toast("Feedback sent privately to The Unicorn"); } catch (error) { toast(error.message); } };
+$("#dismissFeedback").onclick = async () => { try { await api(active, "/api/field/feedback", { dismiss: true }); $("#feedbackPanel").hidden = true; toast("Feedback question dismissed"); } catch (error) { toast(error.message); } };
 $("#saveProfile").onclick = () => persistPersonalities("Memory and personalities saved").catch((error) => toast(error.message));
 $("#personalityEditor").onchange = () => { capturePersonalityEditor(); editingPersonalityId = $("#personalityEditor").value; renderPersonalityControls(); };
 $("#newPersonality").onclick = () => {
@@ -375,7 +385,7 @@ async function loadOwnerUser(username = selectedOwnerUser) {
       )
       .join(
         "",
-      )}</div><form id="ownerReplyForm"><label>Reply as The Unicorn<textarea name="message" maxlength="12000" required placeholder="The tester will clearly see that this is a human reply."></textarea></label><button type="submit">Send human reply</button></form>`;
+      )}</div><section><h3>Tester feedback</h3>${(p.testerFeedback||[]).slice().reverse().map(item=>`<article class="admin-record"><strong>${new Date(item.createdAt).toLocaleString()}</strong><p><b>${esc(item.question)}</b><br>${esc(item.message)}</p><small>${esc(item.model||"Model unavailable")} · ${esc(item.personality||"Personality unavailable")}</small></article>`).join("")||'<p class="empty">No direct feedback yet.</p>'}</section><form id="ownerReplyForm"><label>Reply as The Unicorn<textarea name="message" maxlength="12000" required placeholder="The tester will clearly see that this is a human reply."></textarea></label><button type="submit">Send human reply</button></form>`;
   $("#ownerReplyForm").onsubmit = async (event) => {
     event.preventDefault();
     const message = new FormData(event.currentTarget).get("message");
