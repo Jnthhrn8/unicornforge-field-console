@@ -1,17 +1,606 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#170c31"><meta name="description" content="Private pre-alpha field testing for Unicorn Forge."><title>Unicorn Forge · First Testers</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23170c31'/%3E%3Ctext x='8' y='48' font-size='46'%3E%F0%9F%A6%84%3C/text%3E%3C/svg%3E"><link rel="stylesheet" href="field-console.css"></head>
-<body>
-  <div class="rainbow-line" aria-hidden="true"></div><div class="confetti" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-  <header><div class="mark">🦄</div><div><strong>UNICORN FORGE</strong><small>FIRST TESTERS · PRIVATE PRE-ALPHA</small></div><nav><button class="nav-link" data-view="welcome">Welcome</button><button class="nav-link" data-view="details">What to know</button><button class="nav-link" data-view="credits">Credits</button></nav><span id="connectionState">Logged out</span></header>
-  <main>
-    <section id="welcomePanel" class="view hero"><div><p class="eyebrow">A VERY SMALL CIRCLE. A VERY EARLY BUILD.</p><h1>You’ve been chosen by <span>The Unicorn.</span></h1><p class="lede">Welcome to the first field test of Unicorn Forge—an experimental AI workspace learning how to become a more capable, personal, and accountable assistant.</p><div class="hero-actions"><button data-view="login">Enter the field test</button><button class="ghost" data-view="details">Read the full disclosure</button></div><p class="microcopy">Invitation only · Private Tailscale access · Alpha software may fail spectacularly</p></div><div class="invitation-card"><span>FIELD TESTER</span><div class="ticket-unicorn">🦄</div><strong>FOUNDING COHORT</strong><p>Your testing, candor, and weird edge cases will shape the release.</p><small>UF · 0001 → ∞</small></div></section>
-    <section id="detailsPanel" class="view" hidden><div class="section-heading"><p class="eyebrow">BEFORE YOU BEGIN</p><h2>The unabridged field-test guide</h2><p>Plain language comes first. Important legal and data details are not hidden behind tiny links.</p></div><div class="info-grid"><article><b>01</b><h3>What this is</h3><p>Unfinished pre-alpha software. Features, models, tools, availability, and saved data may change or fail. It is not a professional, emergency, medical, legal, financial, or safety-critical service.</p></article><article><b>02</b><h3>What you receive</h3><p>One isolated tester account with one chat, personal memory, personality settings, live task activity, and access to whichever Forge computer is online.</p></article><article><b>03</b><h3>What we collect</h3><p>Account details, onboarding answers, chats, responses, feedback, timestamps, device/browser details, network address, tool activity, errors, and service diagnostics.</p></article><article><b>04</b><h3>Why we collect it</h3><p>To operate and personalize the test, diagnose failures, evaluate model and tool behavior, improve safety and usability, and create de-identified training/evaluation material.</p></article><article><b>05</b><h3>Human review</h3><p>The Unicorn can and may review every test chat and activity record. Do not submit passwords, payment details, government IDs, medical records, confidential work, or other sensitive information.</p></article><article><b>06</b><h3>Retention and exports</h3><p>At completion you receive the original record and a redacted portable copy. Original account data is then deleted. A de-identified copy may be retained for training, testing, and evaluation.</p></article><article><b>07</b><h3>Your choices</h3><p>Participation and public recognition are voluntary. You may stop or request export and deletion. A redacted record already incorporated into a completed aggregate evaluation or model artifact may not be retractable.</p></article><article><b>08</b><h3>Security</h3><p>Access requires tester credentials and an approved private Tailscale network. Administrative actions require The Unicorn’s FIDO key. No system is perfectly secure.</p></article></div><aside class="legal-card"><h3>Alpha participation terms · working template</h3><p>By continuing, you confirm you are authorized to participate and are at least 18, or have parent/guardian permission. The software is provided “as is” and “as available,” without warranties. To the fullest extent allowed by law, the operator is not liable for indirect, incidental, special, consequential, or reliance damages arising from alpha use. Do not use Forge for unlawful activity or decisions where errors could cause harm. You retain rights in submitted content and permit its processing for this test and retention of de-identified derivatives for research, training, testing, and improvement as disclosed above.</p><p><strong>Not legal advice:</strong> Final operator identity/contact, effective date, governing law, retention period, subprocessors, dispute terms, age policy, and jurisdiction-specific rights still require review before broader distribution.</p></aside><button data-view="login">I’m ready to continue</button></section>
-    <aside id="consentNotice" class="card" hidden><h2>Consent checkpoint</h2><p>All chats and test activity can and may be viewed by The Unicorn. At test completion, your original data will be exported to you and deleted; a redacted, de-identified version may be retained.</p><label class="remember"><input id="consent" type="checkbox"> I read the full disclosure, understand this is alpha software, and consent to the described collection, human review, export, redaction, retention, and deletion process.</label></aside>
-    <section id="loginPanel" class="card" hidden><p class="eyebrow">PRIVATE ACCESS</p><h1>Tester login</h1><p>Each tester receives exactly one isolated chat, memory, and personality. Normal Forge data is never available here.</p><div class="connections"><fieldset><legend>TUF</legend><label>Tailscale HTTPS address<input id="tufUrl" inputmode="url" value="https://tuf-unicorn.tail0e71ff.ts.net:3211"></label><span id="tufState">Not checked</span></fieldset><fieldset><legend>STRIX</legend><label>Tailscale HTTPS address<input id="strixUrl" inputmode="url" value="https://unicorn-strix.tail0e71ff.ts.net:3211"></label><span id="strixState">Not checked</span></fieldset></div><label>Username<input id="username" autocomplete="username"></label><label>Password<input id="password" type="password" autocomplete="current-password"></label><label class="remember"><input id="rememberAddresses" type="checkbox" checked> Remember non-secret computer addresses</label><button id="login">Log in securely</button><details><summary>Owner setup</summary><p>Initial enrollment requires the Forge device key once. Creating testers and opening monitoring require touching your enrolled FIDO key.</p><label>Forge device key<input id="deviceKey" type="password" autocomplete="off"></label><button id="enrollFido" class="ghost">Enroll FIDO key</button><button id="createTester" class="ghost">Create this tester</button><button id="ownerConsole" class="ghost">Open owner console</button></details></section>
-    <section id="onboardingPanel" class="card" hidden><div class="section-heading"><p class="eyebrow">MAKE IT YOURS</p><h2>A few questions before your first chat</h2><p>Contact details remain in your original record and are removed from retained training data. Required fields are marked.</p></div><form id="onboardingForm"><fieldset><legend>About you</legend><div class="form-grid"><label>Full name *<input name="name" maxlength="120" required autocomplete="name"></label><label>Email *<input name="email" type="email" maxlength="254" required autocomplete="email"></label><label>Phone number<input name="phone" type="tel" maxlength="40" autocomplete="tel"></label><label>Pronouns<input name="pronouns" maxlength="60"></label><label>Time zone<input name="timezone" maxlength="80" placeholder="America/New_York"></label><label>Role or occupation<input name="occupation" maxlength="160"></label></div></fieldset><fieldset><legend>Pre-personalize your Forge</legend><label>What do you want an AI assistant to help you accomplish? *<textarea name="goals" maxlength="2000" required></textarea></label><div class="form-grid"><label>How should it communicate?<select name="communicationStyle"><option>Concise and direct</option><option>Friendly and explanatory</option><option>Detailed and technical</option><option>Ask before assuming</option><option>Adapt to the task</option></select></label><label>Desired personality<input name="assistantStyle" maxlength="800" placeholder="Warm, candid, curious…"></label><label>AI experience<select name="experience"><option>New to AI assistants</option><option>Occasional user</option><option>Frequent user</option><option>Power user / developer</option></select></label><label>Accessibility needs<input name="accessibility" maxlength="1200" placeholder="Voice, larger text, reduced motion…"></label></div></fieldset><fieldset><legend>Help tune the app</legend><label>Devices and operating systems<input name="devices" maxlength="800"></label><label>Real workflows Forge should handle<textarea name="workflows" maxlength="1600"></textarea></label><label>What frustrates you about current AI tools?<textarea name="frustrations" maxlength="2000"></textarea></label><label>One must-have capability for release<textarea name="mustHave" maxlength="2000"></textarea></label><div class="form-grid"><label>Comfort with these data practices<select name="privacyComfort"><option>Comfortable</option><option>Comfortable with questions</option><option>Unsure—please contact me</option></select></label><label>Testing availability<input name="testingAvailability" maxlength="800"></label></div><label>Anything else?<textarea name="other" maxlength="2000"></textarea></label></fieldset><fieldset><legend>Founding tester recognition</legend><label>Display name for the “First Testers” page<input name="displayName" maxlength="120" placeholder="Name, nickname, or blank"></label><label class="remember"><input name="creditConsent" type="checkbox"> Include this display name in public acknowledgments. I can change my mind later.</label></fieldset><button type="submit">Save and enter Unicorn Forge</button></form></section>
-    <section id="creditsPanel" class="view" hidden><div class="thanks-hero"><div class="ticket-unicorn">🦄</div><p class="eyebrow">BUILT WITH PEOPLE, PIXELS &amp; PATIENCE</p><h2>Thank you for helping us find the magic.</h2><p>Every useful observation, failed run, unexpected prompt, and honest critique makes Unicorn Forge better.</p></div><div class="credits-grid"><article><h3>The First Testers</h3><p class="placeholder-list">[Your name could live here]<br>[Founding tester names, with permission]<br>[Future cohort acknowledgments]</p><p>Recognition is optional. Details are never listed without consent.</p></article><article><h3>Open-source foundations</h3><p>Gratitude to the people behind Electron, Node.js, Chromium, Ollama, Hermes Agent, SimpleWebAuthn, Tailscale, ntfy, ComfyUI, Kokoro, Qwen, Gemma, Llama, Nomic, Stable Diffusion, FLUX, and the many dependencies and model communities making this possible.</p><a href="LICENSES.md">Read model and software notices</a></article><article><h3>Special thanks</h3><p><strong>ChatGPT and Codex</strong>, for helping The Unicorn turn a sprawling idea into code, tests, documentation, and a working field test.</p><p>[Add collaborators, advisors, artists, communities, and special mentions here.]</p></article><article><h3>From The Unicorn</h3><p>Thank you for trusting this early work with your time and imagination. I’ll keep building, documenting, correcting, and listening long after the confetti lands.</p><p>— The Unicorn</p></article></div><button data-view="login">Join the field test</button></section>
-    <section id="adminPanel" class="card" hidden><div class="toolbar"><h2>The Unicorn control panel</h2><button id="toggleTraffic" class="danger">Stop all tester traffic</button><button id="closeAdmin" class="ghost">Close</button></div><div id="adminStats"></div><div class="connections"><section><h3>Connected devices</h3><div id="adminDevices"></div></section><section><h3>Tester accounts</h3><div id="adminUsers"></div></section></div><h3>Recent traffic</h3><div id="adminAudit"></div><section id="adminChat"></section></section>
-    <section id="consolePanel" class="card" hidden><div class="toolbar"><label>Active computer<select id="computer"></select></label><label>Model<select id="model"></select></label><label>Task mode<select id="runMode"><option value="single">Single model</option><option value="auto" selected>Auto team</option><option value="team">Always team</option><option value="shared">Share resources</option></select></label><button id="settings" class="ghost">Memory &amp; personality</button><button id="clear" class="ghost">Clear chat</button><button id="logout" class="danger">Log out</button></div><section id="profilePanel" hidden><label>Memory<textarea id="memory" rows="5" maxlength="16000"></textarea></label><label>Personality<textarea id="personality" rows="5" maxlength="12000"></textarea></label><button id="saveProfile">Save profile</button></section><section id="messages" class="messages"><p class="empty">Your private tester chat is empty.</p></section><form id="composer"><textarea id="prompt" rows="3" maxlength="12000" placeholder="Ask Unicorn Forge…" required></textarea><button id="send" type="submit">Send</button></form></section>
-  </main><footer><span>© 2026 The Unicorn · Unicorn Forge pre-alpha</span><button class="nav-link" data-view="details">Privacy &amp; alpha terms</button><a href="LICENSES.md">Licenses</a><span>[Operator contact · Effective date · Jurisdiction]</span></footer><div id="toast" role="status"></div><script src="field-console-v2.js"></script><script src="field-compliance.js"></script><script src="field-onboarding.js"></script>
-</body></html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#170c31" />
+    <meta
+      name="description"
+      content="Private pre-alpha field testing for Unicorn Forge."
+    />
+    <title>Unicorn Forge · First Testers</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23170c31'/%3E%3Ctext x='8' y='48' font-size='46'%3E%F0%9F%A6%84%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="field-console.css" />
+    <link rel="stylesheet" href="field-admin.css" />
+  </head>
+  <body>
+    <div class="rainbow-line" aria-hidden="true"></div>
+    <div class="confetti" aria-hidden="true">
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
+    <header>
+      <div class="mark">🦄</div>
+      <div>
+        <strong>UNICORN FORGE</strong
+        ><small>FIRST TESTERS · PRIVATE PRE-ALPHA</small>
+      </div>
+      <nav>
+        <button class="nav-link" data-view="welcome">Welcome</button
+        ><button class="nav-link" data-view="details">What to know</button
+        ><button class="nav-link" data-view="credits">Credits</button>
+      </nav>
+      <span id="connectionState">Logged out</span>
+    </header>
+    <main>
+      <section id="welcomePanel" class="view hero">
+        <div>
+          <p class="eyebrow">A VERY SMALL CIRCLE. A VERY EARLY BUILD.</p>
+          <h1>You’ve been chosen by <span>The Unicorn.</span></h1>
+          <p class="lede">
+            Welcome to the first field test of Unicorn Forge—an experimental AI
+            workspace learning how to become a more capable, personal, and
+            accountable assistant.
+          </p>
+          <div class="hero-actions">
+            <button data-view="login">Enter the field test</button
+            ><button class="ghost" data-view="details">
+              Read the full disclosure
+            </button>
+          </div>
+          <p class="microcopy">
+            Invitation only · Private Tailscale access · Alpha software may fail
+            spectacularly
+          </p>
+        </div>
+        <div class="invitation-card">
+          <span>FIELD TESTER</span>
+          <div class="ticket-unicorn">🦄</div>
+          <strong>FOUNDING COHORT</strong>
+          <p>
+            Your testing, candor, and weird edge cases will shape the release.
+          </p>
+          <small>UF · 0001 → ∞</small>
+        </div>
+      </section>
+      <section id="detailsPanel" class="view" hidden>
+        <div class="section-heading">
+          <p class="eyebrow">BEFORE YOU BEGIN</p>
+          <h2>The unabridged field-test guide</h2>
+          <p>
+            Plain language comes first. Important legal and data details are not
+            hidden behind tiny links.
+          </p>
+        </div>
+        <div class="info-grid">
+          <article>
+            <b>01</b>
+            <h3>What this is</h3>
+            <p>
+              Unfinished pre-alpha software. Features, models, tools,
+              availability, and saved data may change or fail. It is not a
+              professional, emergency, medical, legal, financial, or
+              safety-critical service.
+            </p>
+          </article>
+          <article>
+            <b>02</b>
+            <h3>What you receive</h3>
+            <p>
+              One isolated tester account with one chat, personal memory,
+              personality settings, live task activity, and access to whichever
+              Forge computer is online.
+            </p>
+          </article>
+          <article>
+            <b>03</b>
+            <h3>What we collect</h3>
+            <p>
+              Account details, onboarding answers, chats, responses, feedback,
+              timestamps, browser and approximate hardware information,
+              network address, tool activity and output, errors, access
+              changes, and structured debugging logs. Passwords and
+              authentication secrets are excluded from debugging logs.
+            </p>
+          </article>
+          <article>
+            <b>04</b>
+            <h3>Why we collect it</h3>
+            <p>
+              To operate and personalize the test, diagnose failures, evaluate
+              model and tool behavior, improve safety and usability, and create
+              de-identified training/evaluation material.
+            </p>
+          </article>
+          <article>
+            <b>05</b>
+            <h3>Human review</h3>
+            <p>
+              The Unicorn can review chats and activity while they are
+              happening, pause model replies, enter a conversation, and reply
+              directly. Human replies are visibly labeled “This message is
+              from The Unicorn.” Do not submit passwords, payment details,
+              government IDs, medical records, confidential work, or other
+              sensitive information.
+            </p>
+          </article>
+          <article>
+            <b>06</b>
+            <h3>Retention and exports</h3>
+            <p>
+              At completion you receive the original record and a redacted
+              portable copy. Original account data is then deleted. A
+              de-identified copy may be retained for training, testing, and
+              evaluation.
+            </p>
+          </article>
+          <article>
+            <b>07</b>
+            <h3>Your choices</h3>
+            <p>
+              Participation and public recognition are voluntary. You may stop
+              or request export and deletion. A redacted record already
+              incorporated into a completed aggregate evaluation or model
+              artifact may not be retractable.
+            </p>
+          </article>
+          <article>
+            <b>08</b>
+            <h3>Security</h3>
+            <p>
+              Access requires tester credentials and an approved private
+              Tailscale network. Administrative actions require separate owner
+              authentication. No system is perfectly secure.
+            </p>
+          </article>
+        </div>
+        <aside class="legal-card">
+          <h3>Alpha participation terms · working template</h3>
+          <p>
+            By continuing, you confirm you are authorized to participate and are
+            at least 18, or have parent/guardian permission. The software is
+            provided “as is” and “as available,” without warranties. To the
+            fullest extent allowed by law, the operator is not liable for
+            indirect, incidental, special, consequential, or reliance damages
+            arising from alpha use. Do not use Forge for unlawful activity or
+            decisions where errors could cause harm. You retain rights in
+            submitted content and permit its processing for this test and
+            retention of de-identified derivatives for research, training,
+            testing, and improvement as disclosed above.
+          </p>
+          <p>
+            <strong>Not legal advice:</strong> Final operator identity/contact,
+            effective date, governing law, retention period, subprocessors,
+            dispute terms, age policy, and jurisdiction-specific rights still
+            require review before broader distribution.
+          </p>
+        </aside>
+        <button data-view="login">I’m ready to continue</button>
+      </section>
+      <aside id="consentNotice" class="card" hidden>
+        <h2>Consent checkpoint</h2>
+        <p>
+          All chats and test activity can and may be viewed by The Unicorn. At
+          test completion, your original data will be exported to you and
+          deleted; a redacted, de-identified version may be retained.
+        </p>
+        <label class="remember"
+          ><input id="consent" type="checkbox" /> I read the full disclosure,
+          understand this is alpha software, and consent to the described
+          collection, human review, export, redaction, retention, and deletion
+          process.</label
+        >
+      </aside>
+      <section id="loginPanel" class="card" hidden>
+        <p class="eyebrow">PRIVATE ACCESS</p>
+        <h1>Tester access</h1>
+        <p>
+          Each tester receives exactly one isolated chat, memory, and
+          personality. Normal Forge data is never available here.
+        </p>
+        <details class="access-flow" open>
+          <summary>Request an invitation</summary>
+          <p>
+            Your request is sent to The Unicorn through the private ntfy
+            notification channel. Approval is not automatic.
+          </p>
+          <form id="accessRequestForm">
+            <div class="form-grid">
+              <label
+                >Name *<input
+                  name="name"
+                  maxlength="120"
+                  required
+                  autocomplete="name" /></label
+              ><label
+                >Email *<input
+                  name="email"
+                  type="email"
+                  maxlength="254"
+                  required
+                  autocomplete="email" /></label
+              ><label
+                >Phone<input
+                  name="phone"
+                  type="tel"
+                  maxlength="40"
+                  autocomplete="tel" /></label
+              ><label
+                >Desired username *<input
+                  name="username"
+                  pattern="[a-z0-9][a-z0-9_-]{2,31}"
+                  maxlength="32"
+                  required
+                  placeholder="lowercase only"
+              /></label>
+            </div>
+            <label
+              >Why would you like to test Unicorn Forge? *<textarea
+                name="reason"
+                maxlength="2000"
+                required
+              ></textarea></label
+            ><button type="submit">Send access request</button>
+          </form>
+        </details>
+        <details class="access-flow">
+          <summary>I received an enrollment code</summary>
+          <form id="claimAccessForm">
+            <div class="form-grid">
+              <label
+                >Approved username *<input
+                  name="username"
+                  required
+                  autocomplete="username" /></label
+              ><label
+                >One-time enrollment code *<input
+                  name="code"
+                  required
+                  autocomplete="one-time-code" /></label
+              ><label
+                >Create password *<input
+                  name="password"
+                  type="password"
+                  minlength="10"
+                  maxlength="256"
+                  required
+                  autocomplete="new-password" /></label
+              ><label
+                >Confirm password *<input
+                  name="confirmPassword"
+                  type="password"
+                  minlength="10"
+                  maxlength="256"
+                  required
+                  autocomplete="new-password"
+              /></label>
+            </div>
+            <button type="submit">Claim tester account</button>
+          </form>
+        </details>
+        <hr />
+        <h2>Already enrolled?</h2>
+        <div class="connections">
+          <fieldset>
+            <legend>TUF</legend>
+            <label
+              >Tailscale HTTPS address<input
+                id="tufUrl"
+                inputmode="url"
+                value="https://tuf-unicorn.tail0e71ff.ts.net:3211" /></label
+            ><span id="tufState">Not checked</span>
+          </fieldset>
+          <fieldset>
+            <legend>STRIX</legend>
+            <label
+              >Tailscale HTTPS address<input
+                id="strixUrl"
+                inputmode="url"
+                value="https://unicorn-strix.tail0e71ff.ts.net:3211" /></label
+            ><span id="strixState">Not checked</span>
+          </fieldset>
+        </div>
+        <label>Username<input id="username" autocomplete="username" /></label
+        ><label
+          >Password<input
+            id="password"
+            type="password"
+            autocomplete="current-password" /></label
+        ><label class="remember"
+          ><input id="rememberAddresses" type="checkbox" checked /> Remember
+          non-secret computer addresses</label
+        ><button id="login">Log in securely</button>
+        <details>
+          <summary>Owner controls</summary>
+          <p>
+            Creating testers, reviewing requests, monitoring activity, and
+            entering chats require private owner authentication.
+          </p>
+          <button id="ownerConsole" class="ghost">Open owner console</button>
+        </details>
+      </section>
+      <section id="onboardingPanel" class="card" hidden>
+        <div class="section-heading">
+          <p class="eyebrow">MAKE IT YOURS</p>
+          <h2>A few questions before your first chat</h2>
+          <p>
+            Contact details remain in your original record and are removed from
+            retained training data. Required fields are marked.
+          </p>
+        </div>
+        <form id="onboardingForm">
+          <fieldset>
+            <legend>About you</legend>
+            <div class="form-grid">
+              <label
+                >Full name *<input
+                  name="name"
+                  maxlength="120"
+                  required
+                  autocomplete="name" /></label
+              ><label
+                >Email *<input
+                  name="email"
+                  type="email"
+                  maxlength="254"
+                  required
+                  autocomplete="email" /></label
+              ><label
+                >Phone number<input
+                  name="phone"
+                  type="tel"
+                  maxlength="40"
+                  autocomplete="tel" /></label
+              ><label>Pronouns<input name="pronouns" maxlength="60" /></label
+              ><label
+                >Time zone<input
+                  name="timezone"
+                  maxlength="80"
+                  placeholder="America/New_York" /></label
+              ><label
+                >Role or occupation<input name="occupation" maxlength="160"
+              /></label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Pre-personalize your Forge</legend>
+            <label
+              >What do you want an AI assistant to help you accomplish?
+              *<textarea name="goals" maxlength="2000" required></textarea>
+            </label>
+            <div class="form-grid">
+              <label
+                >How should it communicate?<select name="communicationStyle">
+                  <option>Concise and direct</option>
+                  <option>Friendly and explanatory</option>
+                  <option>Detailed and technical</option>
+                  <option>Ask before assuming</option>
+                  <option>Adapt to the task</option>
+                </select></label
+              ><label
+                >Desired personality<input
+                  name="assistantStyle"
+                  maxlength="800"
+                  placeholder="Warm, candid, curious…" /></label
+              ><label
+                >AI experience<select name="experience">
+                  <option>New to AI assistants</option>
+                  <option>Occasional user</option>
+                  <option>Frequent user</option>
+                  <option>Power user / developer</option>
+                </select></label
+              ><label
+                >Accessibility needs<input
+                  name="accessibility"
+                  maxlength="1200"
+                  placeholder="Voice, larger text, reduced motion…"
+              /></label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Help tune the app</legend>
+            <label
+              >Devices and operating systems<input
+                name="devices"
+                maxlength="800" /></label
+            ><label
+              >Real workflows Forge should handle<textarea
+                name="workflows"
+                maxlength="1600"
+              ></textarea></label
+            ><label
+              >What frustrates you about current AI tools?<textarea
+                name="frustrations"
+                maxlength="2000"
+              ></textarea></label
+            ><label
+              >One must-have capability for release<textarea
+                name="mustHave"
+                maxlength="2000"
+              ></textarea>
+            </label>
+            <div class="form-grid">
+              <label
+                >Comfort with these data practices<select name="privacyComfort">
+                  <option>Comfortable</option>
+                  <option>Comfortable with questions</option>
+                  <option>Unsure—please contact me</option>
+                </select></label
+              ><label
+                >Testing availability<input
+                  name="testingAvailability"
+                  maxlength="800"
+              /></label>
+            </div>
+            <label
+              >Anything else?<textarea name="other" maxlength="2000"></textarea>
+            </label>
+          </fieldset>
+          <fieldset>
+            <legend>Founding tester recognition</legend>
+            <label
+              >Display name for the “First Testers” page<input
+                name="displayName"
+                maxlength="120"
+                placeholder="Name, nickname, or blank" /></label
+            ><label class="remember"
+              ><input name="creditConsent" type="checkbox" /> Include this
+              display name in public acknowledgments. I can change my mind
+              later.</label
+            >
+          </fieldset>
+          <button type="submit">Save and enter Unicorn Forge</button>
+        </form>
+      </section>
+      <section id="creditsPanel" class="view" hidden>
+        <div class="thanks-hero">
+          <div class="ticket-unicorn">🦄</div>
+          <p class="eyebrow">BUILT WITH PEOPLE, PIXELS &amp; PATIENCE</p>
+          <h2>Thank you for helping us find the magic.</h2>
+          <p>
+            Every useful observation, failed run, unexpected prompt, and honest
+            critique makes Unicorn Forge better.
+          </p>
+        </div>
+        <div class="credits-grid">
+          <article>
+            <h3>The First Testers</h3>
+            <p class="placeholder-list">
+              [Your name could live here]<br />[Founding tester names, with
+              permission]<br />[Future cohort acknowledgments]
+            </p>
+            <p>
+              Recognition is optional. Details are never listed without consent.
+            </p>
+          </article>
+          <article>
+            <h3>Open-source foundations</h3>
+            <p>
+              Gratitude to the people behind Electron, Node.js, Chromium,
+              Ollama, Hermes Agent, SimpleWebAuthn, Tailscale, ntfy, ComfyUI,
+              Kokoro, Qwen, Gemma, Llama, Nomic, Stable Diffusion, FLUX, and the
+              many dependencies and model communities making this possible.
+            </p>
+            <a href="LICENSES.md">Read model and software notices</a>
+          </article>
+          <article>
+            <h3>Special thanks</h3>
+            <p>
+              <strong>ChatGPT and Codex</strong>, for helping The Unicorn turn a
+              sprawling idea into code, tests, documentation, and a working
+              field test.
+            </p>
+            <p>
+              [Add collaborators, advisors, artists, communities, and special
+              mentions here.]
+            </p>
+          </article>
+          <article>
+            <h3>From The Unicorn</h3>
+            <p>
+              Thank you for trusting this early work with your time and
+              imagination. I’ll keep building, documenting, correcting, and
+              listening long after the confetti lands.
+            </p>
+            <p>— The Unicorn</p>
+          </article>
+        </div>
+        <button data-view="login">Join the field test</button>
+      </section>
+      <section id="adminPanel" class="card" hidden>
+        <div class="toolbar">
+          <h2>The Unicorn control panel</h2>
+          <button id="toggleTraffic" class="danger">
+            Stop all tester traffic</button
+          ><button id="refreshAdmin" class="ghost">Refresh now</button
+          ><button id="closeAdmin" class="ghost">Close</button>
+        </div>
+        <div id="adminStats"></div>
+        <div class="connections">
+          <section>
+            <h3>Connected devices</h3>
+            <p class="empty">
+              Browser-reported hardware is approximate and never includes
+              passwords or authentication secrets.
+            </p>
+            <div id="adminDevices"></div>
+          </section>
+          <section>
+            <h3>Tester accounts &amp; usage</h3>
+            <div id="adminUsers"></div>
+          </section>
+        </div>
+        <section id="adminChat"></section>
+        <h3>Debug activity log</h3>
+        <p class="empty">
+          Persistent structured events include timestamps, account,
+          network/device metadata, actions, failures, model names, and character
+          counts. Passwords, access tokens, cookies, and authorization headers
+          are excluded.
+        </p>
+        <div id="adminAudit"></div>
+      </section>
+      <section id="consolePanel" class="card" hidden>
+        <div class="toolbar">
+          <label>Active computer<select id="computer"></select></label
+          ><label>Model<select id="model"></select></label
+          ><label
+            >Task mode<select id="runMode">
+              <option value="single">Single model</option>
+              <option value="auto" selected>Auto team</option>
+              <option value="team">Always team</option>
+              <option value="shared">Share resources</option>
+            </select></label
+          ><button id="settings" class="ghost">Memory &amp; personality</button
+          ><button id="clear" class="ghost">Clear chat</button
+          ><button id="logout" class="danger">Log out</button>
+        </div>
+        <section id="profilePanel" hidden>
+          <label
+            >Memory<textarea
+              id="memory"
+              rows="5"
+              maxlength="16000"
+            ></textarea></label
+          ><label
+            >Personality<textarea
+              id="personality"
+              rows="5"
+              maxlength="12000"
+            ></textarea></label
+          ><button id="saveProfile">Save profile</button>
+        </section>
+        <section id="messages" class="messages">
+          <p class="empty">Your private tester chat is empty.</p>
+        </section>
+        <form id="composer">
+          <textarea
+            id="prompt"
+            rows="3"
+            maxlength="12000"
+            placeholder="Ask Unicorn Forge…"
+            required
+          ></textarea
+          ><button id="send" type="submit">Send</button>
+        </form>
+      </section>
+    </main>
+    <footer>
+      <span>© 2026 The Unicorn · Unicorn Forge pre-alpha</span
+      ><button class="nav-link" data-view="details">
+        Privacy &amp; alpha terms</button
+      ><a href="LICENSES.md">Licenses</a
+      ><span>[Operator contact · Effective date · Jurisdiction]</span>
+    </footer>
+    <div id="toast" role="status"></div>
+    <script src="field-console-v2.js"></script>
+    <script src="field-compliance.js"></script>
+    <script src="field-onboarding.js"></script>
+  </body>
+</html>

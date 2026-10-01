@@ -1,0 +1,19 @@
+.access-flow {
+  margin: 1rem 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1rem;
+  background: #100b1b;
+}
+.access-flow summary { cursor: pointer; color: var(--gold); font-weight: 900; }
+.admin-record { border: 1px solid var(--line); border-radius: 12px; padding: 0.85rem; margin: 0.65rem 0; background: #120d1e; }
+.admin-record small,.admin-user small { display: block; color: var(--muted); margin-top: 0.35rem; }
+.admin-user { display: block; width: 100%; text-align: left; margin: 0.45rem 0; }
+.owner-chat-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-top: 1.5rem; }
+.owner-live-chat { max-height: 55vh; overflow: auto; border-block: 1px solid var(--line); padding: 0.75rem 0; }
+.message.human { border: 2px solid var(--cyan); background: #142737; }
+.enrollment-code { border: 2px solid var(--gold); border-radius: 12px; padding: 1rem; margin-top: 1rem; background: #2a1d0c; }
+.enrollment-code code { display: block; font-size: 1.4rem; color: var(--gold); margin: 0.65rem 0; user-select: all; }
+#adminAudit { max-height: 300px; overflow: auto; padding: 0.75rem; background: #090610; border-radius: 10px; overflow-wrap: anywhere; }
+hr { border: 0; border-top: 1px solid var(--line); margin: 1.5rem 0; }
+@media(max-width:760px){.owner-chat-heading{display:block}}
