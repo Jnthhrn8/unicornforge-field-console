@@ -33,9 +33,11 @@ function capturePersonalityEditor() {
 function renderPersonalityControls() {
   if (!personalityDrafts.length) personalityDrafts = normalizedPersonalities();
   if (!personalityDrafts.some((item) => item.id === editingPersonalityId)) editingPersonalityId = personalityDrafts[0].id;
-  if (!personalityDrafts.some((item) => item.id === profile.activePersonalityId)) profile.activePersonalityId = personalityDrafts[0].id;
+  const available = [...personalityDrafts, ...(profile.learnedPersonality ? [profile.learnedPersonality] : [])];
+  if (!available.some((item) => item.id === profile.activePersonalityId)) profile.activePersonalityId = personalityDrafts[0].id;
   const options = personalityDrafts.map((item) => `<option value="${esc(item.id)}">${esc(item.name)}</option>`).join("");
-  $("#chatPersonality").innerHTML = options;
+  const activeOptions = `${options}${profile.learnedPersonality ? `<option value="growth-companion">🔒 ${esc(profile.learnedPersonality.name)} · learned</option>` : ''}`;
+  $("#chatPersonality").innerHTML = activeOptions;
   $("#chatPersonality").value = profile.activePersonalityId;
   $("#personalityEditor").innerHTML = options;
   $("#personalityEditor").value = editingPersonalityId;
@@ -45,11 +47,22 @@ function renderPersonalityControls() {
   $("#personalityCount").textContent = `${personalityDrafts.length} of 4`;
   $("#newPersonality").disabled = personalityDrafts.length >= 4;
   $("#deletePersonality").disabled = personalityDrafts.length <= 1;
+  const readiness = profile.growthReadiness || {};
+  if (profile.learnedPersonality) {
+    $("#growthPersonalityStatus").textContent = `${profile.learnedPersonality.name} is ready. This protected personality evolves from interaction patterns and cannot be edited or deleted.`;
+    $("#growthPersonalityRationale").textContent = profile.learnedPersonality.rationale || "";
+  } else {
+    const required = readiness.requirements || { messages: 18, words: 700, sessions: 3 };
+    $("#growthPersonalityStatus").textContent = `Learning naturally: ${readiness.messages || 0}/${required.messages} messages, ${readiness.words || 0}/${required.words} words, and ${readiness.sessions || 0}/${required.sessions} distinct sessions. It unlocks only when all three are ready.`;
+    $("#growthPersonalityRationale").textContent = "It is designed for user-chosen growth—not time-in-app, dependency, or pressure to continue chatting.";
+  }
 }
 async function persistPersonalities(message = "Profile saved") {
   capturePersonalityEditor();
+  const readiness = profile.growthReadiness;
   const r = await api(active, "/api/field/profile", { memory: $("#memory").value, personalities: personalityDrafts, activePersonalityId: profile.activePersonalityId });
   profile = r.profile;
+  profile.growthReadiness = readiness;
   personalityDrafts = normalizedPersonalities(profile);
   renderPersonalityControls();
   toast(message);
@@ -158,6 +171,7 @@ async function refresh() {
     const editingProfile = $("#profilePanel").contains(document.activeElement);
     const r = await api(active, "/api/field/profile");
     profile = r.profile;
+    profile.growthReadiness = r.growthReadiness;
     $("#model").innerHTML = r.models
       .map((m) => `<option value="${esc(m.name)}">${esc(m.name)}</option>`)
       .join("");
