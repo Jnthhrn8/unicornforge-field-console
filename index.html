@@ -12,11 +12,7 @@
       content="Private pre-alpha field testing for Unicorn Forge."
     />
     <title>Unicorn Forge · First Testers</title>
-    <link
-      rel="icon"
-      type="image/svg+xml"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23170c31'/%3E%3Ctext x='8' y='48' font-size='46'%3E%F0%9F%A6%84%3C/text%3E%3C/svg%3E"
-    />
+    <link rel="icon" type="image/png" href="unicorn-logo.png" />
     <link rel="stylesheet" href="field-console.css" />
     <link rel="stylesheet" href="field-admin.css" />
     <link rel="stylesheet" href="field-mobile.css" />
@@ -27,7 +23,7 @@
       <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
     </div>
     <header>
-      <div class="mark">🦄</div>
+      <img class="mark" src="unicorn-logo.png" alt="Unicorn Forge circuit unicorn logo" />
       <div>
         <strong>UNICORN FORGE</strong
         ><small>FIRST TESTERS · PRIVATE PRE-ALPHA</small>
@@ -62,7 +58,7 @@
         </div>
         <div class="invitation-card">
           <span>FIELD TESTER</span>
-          <div class="ticket-unicorn">🦄</div>
+          <img class="ticket-unicorn" src="unicorn-logo.png" alt="" />
           <strong>FOUNDING COHORT</strong>
           <p>
             Your testing, candor, and weird edge cases will shape the release.
@@ -558,10 +554,11 @@
           <button id="toggleTraffic" class="danger">
             Stop all tester traffic</button
           ><button id="refreshAdmin" class="ghost">Refresh now</button
+          ><button id="refreshNtfyAdmin" class="ghost">Refresh ntfy channels</button
           ><button id="closeAdmin" class="ghost">Close</button>
         </div>
         <div id="adminStats"></div>
-        <details class="access-flow"><summary>Private ntfy enrollment</summary><p>Access requests and approval packages use the bundled private ntfy service. No paid email or SMS provider is used. Private Forge and ntfy addresses are included only after approval and are never published on this site.</p><p id="messagingStatus" class="empty">ntfy status is reported by the private Forge host.</p></details>
+        <details class="access-flow"><summary>Private ntfy enrollment</summary><p>Access requests and approval packages use the bundled private ntfy service. No paid email or SMS provider is used. Private Forge and ntfy addresses are included only after approval and are never published on this site.</p><p id="messagingStatus" class="empty">ntfy status is reported by the private Forge host.</p><div id="adminNtfyChannels" class="ntfy-channel-status"></div></details>
         <div class="connections">
           <section>
             <h3>Connected devices</h3>

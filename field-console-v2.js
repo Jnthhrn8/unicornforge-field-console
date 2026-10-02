@@ -411,6 +411,7 @@ async function refreshOwner() {
     : "Resume tester traffic";
   $("#toggleTraffic").dataset.enabled = String(v.trafficEnabled);
   const pending = (v.requests || []).filter((r) => r.status === "pending");
+  $("#messagingStatus").textContent = v.ntfy?.configured ? (v.ntfy.running ? "Private ntfy is connected." : v.ntfy.error || "Private ntfy is stopped.") : "Private ntfy is not configured.";
   $("#adminStats").innerHTML =
     `<p><strong>${v.trafficEnabled ? "ACCEPTING TRAFFIC" : "TRAFFIC STOPPED"}</strong> · ${v.running.length} running jobs · ${v.sessions.length} connected devices · ${pending.length} pending requests</p><section><h3>Access requests</h3><div id="accessRequests">${pending.map((r) => `<article class="admin-record"><strong>${esc(r.name)} · @${esc(r.username)}</strong><small>${esc(r.email)} · ${esc(r.phone || "No phone")} · private ntfy enrollment · ${new Date(r.createdAt).toLocaleString()}</small><p><b>Why:</b> ${esc(r.reason)}</p><p><b>Goals:</b> ${esc(r.onboarding?.goals)}<br><b>Style / experience:</b> ${esc(r.onboarding?.communicationStyle)} · ${esc(r.onboarding?.experience)}<br><b>Devices:</b> ${esc(r.feedback?.devices)}<br><b>Workflows:</b> ${esc(r.feedback?.workflows)}<br><b>Frustrations:</b> ${esc(r.feedback?.frustrations)}<br><b>Must-have:</b> ${esc(r.feedback?.mustHave)}<br><b>Data comfort:</b> ${esc(r.feedback?.privacyComfort)} · <b>Availability:</b> ${esc(r.feedback?.testingAvailability)}</p><button data-approve-request="${esc(r.id)}">Approve & create ntfy package</button><button class="danger" data-deny-request="${esc(r.id)}">Deny</button></article>`).join("") || '<p class="empty">No pending requests.</p>'}</div><div id="enrollmentCode">${lastEnrollmentCode}</div></section>`;
   $("#adminDevices").innerHTML =
@@ -487,6 +488,18 @@ $("#ownerConsole").onclick = async () => {
 };
 $("#ownerFromChat").onclick = () => $("#ownerConsole").click();
 $("#refreshAdmin").onclick = refreshOwner;
+$("#refreshNtfyAdmin").onclick = async () => {
+  const button = $("#refreshNtfyAdmin");
+  button.disabled = true;
+  button.textContent = "Refreshing ntfy…";
+  try {
+    const result = await ownerRequest("/api/field/admin/ntfy/refresh", {});
+    $("#adminNtfyChannels").innerHTML = (result.channels || []).map(item => `<span class="${item.ok ? "ok" : "bad"}">${item.ok ? "✓" : "×"} ${esc(item.label)} · ${esc(item.detail)}</span>`).join("");
+    toast(result.ok ? "All ntfy channels connected" : result.stderr || "Some ntfy channels need attention");
+    await refreshOwner();
+  } catch (error) { toast(error.message); }
+  finally { button.disabled = false; button.textContent = "Refresh ntfy channels"; }
+};
 $("#toggleTraffic").onclick = async () => {
   await ownerRequest("/api/field/admin/traffic", {
     enabled: $("#toggleTraffic").dataset.enabled !== "true",
