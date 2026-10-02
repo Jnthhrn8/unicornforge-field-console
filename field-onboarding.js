@@ -1,4 +1,6 @@
 "use strict";
+const PUBLIC_REQUEST_ENDPOINT =
+  "https://messages.tetheredunicorn.com/field-request";
 const publicViews = {
   welcome: document.querySelector("#welcomePanel"),
   details: document.querySelector("#detailsPanel"),
@@ -28,6 +30,8 @@ document
     event.preventDefault();
     if (!document.querySelector("#consent").checked)
       return toast("Read and accept the field-test notice before requesting access");
+    if (!document.querySelector("#ageConfirmed").checked)
+      return toast("You must confirm that you are at least 18 years old");
     const hasInvitationAddress = invitationToggle.checked;
     const invitationAddress = String(new FormData(event.currentTarget).get("requestForgeUrl") || "").trim().replace(/\/$/, "");
     let node = null;
@@ -62,16 +66,36 @@ document
       "testingAvailability",
       "other",
     ]);
-    const requestPayload = { ...identity, deliveryMethod: "private", onboarding, feedback };
+    const requestPayload = {
+      ...identity,
+      deliveryMethod: "private",
+      ageConfirmed: true,
+      onboarding,
+      feedback,
+    };
     if (!hasInvitationAddress) {
-      const blob = new Blob([JSON.stringify({ type: "unicorn-forge-access-request", version: 1, createdAt: new Date().toISOString(), ...requestPayload }, null, 2)], { type: "application/json" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `UnicornForge-access-request-${identity.username}.json`;
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-      location.href = `mailto:TetheredUnicorn@gmail.com?subject=${encodeURIComponent(`Private Unicorn Forge access request · @${identity.username}`)}&body=${encodeURIComponent("Hello The Unicorn,\n\nI would like to request private field-test access. I have attached the UnicornForge access-request JSON file that was just downloaded. I understand approval is not automatic or guaranteed.\n\nThank you.")}`;
-      return toast("Request file downloaded; attach it to the private email that opened");
+      try {
+        const response = await fetch(PUBLIC_REQUEST_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...requestPayload,
+            consent: true,
+            ageConfirmed: true,
+            website: "",
+          }),
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok)
+          throw new Error(result.error || "The private request channel is unavailable");
+        event.currentTarget.reset();
+        document.querySelector("#invitationAddressFields").hidden = true;
+        document.querySelector("#noInvitationAddress").hidden = false;
+        toast(`Request sent privately · reference ${result.reference}`);
+      } catch (error) {
+        toast(error.message);
+      }
+      return;
     }
     try {
       await raw(node, "/api/field/access-request", {
@@ -89,6 +113,8 @@ document
     event.preventDefault();
     if (!document.querySelector("#consent").checked)
       return toast("Read and accept the field-test notice before claiming access");
+    if (!document.querySelector("#ageConfirmed").checked)
+      return toast("You must confirm that you are at least 18 years old");
     const node = urls()[0],
       values = formRecord(event.currentTarget, [
         "username",

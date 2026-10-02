@@ -1,13 +1,16 @@
 "use strict";
 document.querySelector("#consent").checked = false;
+document.querySelector("#ageConfirmed").checked = false;
 window.addEventListener("pageshow", () => {
   document.querySelector("#consent").checked = false;
+  document.querySelector("#ageConfirmed").checked = false;
 });
 const baseLogin = document.querySelector("#login").onclick;
 document.querySelector("#login").onclick = () =>
-  document.querySelector("#consent").checked
+  document.querySelector("#consent").checked &&
+  document.querySelector("#ageConfirmed").checked
     ? baseLogin()
-    : toast("Accept the pre-alpha data and training notice first");
+    : toast("Accept the notice and confirm that you are at least 18 first");
 let ownerExport = null;
 function downloadRecord(name, value) {
   const link = document.createElement("a"),

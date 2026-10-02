@@ -173,7 +173,8 @@
           <h3>Alpha participation terms · working template</h3>
           <p>
             By continuing, you confirm you are authorized to participate and are
-            at least 18, or have parent/guardian permission. The software is
+            at least 18 years old. People under 18 may not register for or use
+            this field test. The software is
             provided “as is” and “as available,” without warranties. To the
             fullest extent allowed by law, the operator is not liable for
             indirect, incidental, special, consequential, or reliance damages
@@ -205,6 +206,10 @@
           collection, human review, export, redaction, retention, and deletion
           process.</label
         >
+        <label class="remember"
+          ><input id="ageConfirmed" type="checkbox" /> I confirm that I am at
+          least 18 years old.</label
+        >
       </aside>
       <section id="loginPanel" class="card" hidden>
         <p class="eyebrow">PRIVATE ACCESS</p>
@@ -216,12 +221,13 @@
         <details class="access-flow" open>
           <summary>Request an invitation</summary>
           <p>
-            Your request is sent to The Unicorn through the private notification
-            channel. Approval is not automatic or guaranteed.
+            Your request is placed in a secure queue and relayed to The Unicorn
+            through the private notification channel. Approval is not automatic
+            or guaranteed.
           </p>
           <form id="accessRequestForm">
             <label class="remember"><input id="hasInvitationAddress" name="hasInvitationAddress" type="checkbox" /> I already have a private invitation address</label>
-            <p id="noInvitationAddress" class="empty">If you are chosen, a private address and connection instructions will be sent to you. You can continue this request now; submitting it will open your email app so you can privately send it to The Unicorn.</p>
+            <p id="noInvitationAddress" class="empty">If you are chosen, a private address and connection instructions will be sent to you privately. You can complete and send this request now.</p>
             <div id="invitationAddressFields" hidden>
               <label>Private invitation address *<input name="requestForgeUrl" type="url" inputmode="url" autocomplete="off" placeholder="Paste the private address from your invitation" /></label>
               <p class="empty">Connect to the invited Tailscale network first. This address is supplied privately by The Unicorn and is not published here.</p>
