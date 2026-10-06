@@ -209,3 +209,32 @@ openConsole = async function () {
     document.querySelector("#onboardingPanel").hidden = false;
   }
 };
+
+
+// Keep owner WebAuthn on the origin where the security key was enrolled.
+function showOwnerLogin() {
+  if (location.hash !== "#owner-login") return;
+  if (document.documentElement.dataset.publicField === "true") {
+    location.assign("https://jnthhrn8.github.io/unicornforge-field-console/#owner-login");
+    return;
+  }
+  showPublicView("login");
+  document.querySelector("#consentNotice").hidden = true;
+  const ownerButton = document.querySelector("#ownerConsole");
+  ownerButton.closest("details").open = true;
+  const address = document.querySelector("#tufUrl");
+  if (!address.value.trim()) address.value = "https://tuf-unicorn.tail0e71ff.ts.net:3211";
+  ownerButton.focus();
+  ownerButton.scrollIntoView({ block: "center" });
+}
+window.addEventListener("hashchange", showOwnerLogin);
+document.querySelectorAll('a[href$="#owner-login"]').forEach((link) => {
+  link.addEventListener("click", (event) => {
+    if (location.origin === "https://jnthhrn8.github.io") {
+      event.preventDefault();
+      location.hash = "owner-login";
+      showOwnerLogin();
+    }
+  });
+});
+showOwnerLogin();
