@@ -19,6 +19,10 @@ document
     button.addEventListener("click", () => showPublicView(button.dataset.view)),
   );
 const invitationToggle = document.querySelector("#hasInvitationAddress");
+if (publicFieldAccess) {
+  invitationToggle.closest("label").hidden = true;
+  document.querySelector("#noInvitationAddress").textContent = "Request access here. Once approved, use your enrollment code to create a password and log in on this website.";
+}
 invitationToggle.addEventListener("change", () => {
   document.querySelector("#invitationAddressFields").hidden = !invitationToggle.checked;
   document.querySelector("#noInvitationAddress").hidden = invitationToggle.checked;
@@ -32,9 +36,9 @@ document
       return toast("Read and accept the field-test notice before requesting access");
     if (!document.querySelector("#ageConfirmed").checked)
       return toast("You must confirm that you are at least 18 years old");
-    const hasInvitationAddress = invitationToggle.checked;
+    const hasInvitationAddress = !publicFieldAccess && invitationToggle.checked;
     const invitationAddress = String(new FormData(event.currentTarget).get("requestForgeUrl") || "").trim().replace(/\/$/, "");
-    let node = null;
+    let node = publicFieldAccess ? urls()[0] : null;
     if (hasInvitationAddress) {
       let parsedInvitationAddress;
       try { parsedInvitationAddress = new URL(invitationAddress); }
@@ -69,11 +73,12 @@ document
     const requestPayload = {
       ...identity,
       deliveryMethod: "private",
+      consent: true,
       ageConfirmed: true,
       onboarding,
       feedback,
     };
-    if (!hasInvitationAddress) {
+    if (!node) {
       try {
         const response = await fetch(PUBLIC_REQUEST_ENDPOINT, {
           method: "POST",
@@ -102,7 +107,7 @@ document
         ...requestPayload,
       });
       event.currentTarget.reset();
-      toast("Request sent to The Unicorn through ntfy");
+      toast("Request sent. Once approved, use your enrollment code here.");
     } catch (error) {
       toast(error.message);
     }
@@ -200,14 +205,13 @@ document
 const openFieldConsole = openConsole;
 openConsole = async function () {
   await openFieldConsole();
+  if (publicFieldAccess && !active) return;
   document.querySelector("#welcomePanel").hidden = true;
   document.querySelector("#detailsPanel").hidden = true;
   document.querySelector("#creditsPanel").hidden = true;
   document.querySelector("#consentNotice").hidden = true;
-  if (!profile.onboarding?.name) {
-    document.querySelector("#consolePanel").hidden = true;
-    document.querySelector("#onboardingPanel").hidden = false;
-  }
+  document.querySelector("#onboardingPanel").hidden = true;
+  document.body.classList.add("chat-open");
 };
 
 

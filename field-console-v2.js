@@ -1,4 +1,5 @@
 "use strict";
+const publicFieldAccess = document.documentElement.dataset.publicField === "true";
 const $ = (s) => document.querySelector(s),
   esc = (v) =>
     String(v ?? "").replace(
@@ -18,7 +19,8 @@ let nodes = [],
   personalityDrafts = [],
   editingPersonalityId = "",
   shownFeedbackToken = "",
-  timer;
+  ownerDebugUser = "", ownerReplyBusy = false, ownerLoading = false, ownerRefreshBusy = false,
+  timer, refreshing = false, refreshFailures = 0;
 function normalizedPersonalities(value = profile) {
   const source = Array.isArray(value.personalities) && value.personalities.length
     ? value.personalities.slice(0, 4)
@@ -75,6 +77,7 @@ function toast(t) {
   setTimeout(() => $("#toast").classList.remove("show"), 2500);
 }
 function urls() {
+  if (publicFieldAccess) return [{ id: "tuf", name: "Unicorn Forge", url: location.origin }];
   return ["tuf", "strix"]
     .map((id) => ({
       id,
@@ -94,13 +97,36 @@ async function raw(n, p, body, headers = {}) {
     },
     body: body === undefined ? undefined : JSON.stringify(body),
     cache: "no-store",
+    signal: AbortSignal.timeout(20000),
+    credentials: publicFieldAccess ? "same-origin" : "omit",
   });
-  const x = await r.json();
-  if (!r.ok) throw Error(x.error || "Request failed");
+  let x;
+  try { x = await r.json(); } catch {
+    throw Error("Forge is temporarily unreachable. Your draft is still here; reconnecting shortly.");
+  }
+  if (!r.ok) {
+    if (publicFieldAccess && active && (r.status === 401 || r.status === 403) && p !== "/api/field/login") {
+      clearInterval(timer);
+      active = null;
+      nodes = [];
+      profile = { messages: [] };
+      $("#messages").replaceChildren();
+      for (const id of ["consolePanel", "profilePanel", "feedbackPanel", "onboardingPanel"]) $("#" + id).hidden = true;
+      $("#loginPanel").hidden = false;
+      $("#consentNotice").hidden = false;
+      $("#connectionState").textContent = "Please log in again";
+    }
+    throw Error(x.error || "Request failed");
+  }
   return x;
 }
 async function api(n, p, body) {
-  return raw(n, p, body, { Authorization: "Bearer " + n.token });
+  if (ownerDebugUser) {
+    if (p === '/api/field/profile' && body === undefined) return ownerRequest('/api/field/admin/tester/profile?username=' + encodeURIComponent(ownerDebugUser));
+    if (p === '/api/field/chat') return ownerRequest('/api/field/admin/tester/chat', { ...body, username: ownerDebugUser });
+    throw Error('This action is unavailable while debugging a tester. Return to owner controls.');
+  }
+  return raw(n, p, body, publicFieldAccess ? {} : { Authorization: "Bearer " + n.token });
 }
 async function login() {
   const username = $("#username").value.trim(),
@@ -122,9 +148,9 @@ async function login() {
     $("#" + n.id + "State").textContent = n.online
       ? "Online · " + n.computer
       : "Unavailable · " + n.error;
-  if (!nodes.length) return toast("Login failed on both Forge computers");
-  sessionStorage.setItem("unicornforge.field.tokens", JSON.stringify(nodes));
-  if ($("#rememberAddresses").checked)
+  if (!nodes.length) return toast(publicFieldAccess ? checked[0]?.error || "The tester server is unavailable" : "Login failed on both Forge computers");
+  if (!publicFieldAccess) sessionStorage.setItem("unicornforge.field.tokens", JSON.stringify(nodes));
+  if (!publicFieldAccess && $("#rememberAddresses").checked)
     localStorage.setItem(
       "unicornforge.field.addresses",
       JSON.stringify(Object.fromEntries(nodes.map((n) => [n.id, n.url]))),
@@ -141,7 +167,7 @@ async function openConsole() {
     .join("");
   $("#loginPanel").hidden = true;
   $("#consolePanel").hidden = false;
-  $("#connectionState").textContent = active.name + " · " + active.username;
+  $("#connectionState").textContent = (ownerDebugUser ? "OWNER DEBUG · " + ownerDebugUser : active.name + " · " + active.username);
   await api(active, "/api/field/device", {
     browser: navigator.userAgent,
     platform: navigator.userAgentData?.platform || navigator.platform,
@@ -153,13 +179,20 @@ async function openConsole() {
     touchPoints: navigator.maxTouchPoints || 0,
   }).catch(() => {});
   await refresh();
-  timer = setInterval(refresh, 1500);
+  if (!active) return;
+
 }
 async function refresh() {
-  if (!active) return;
+  if (!active || refreshing) return;
+  clearTimeout(timer);
+  refreshing = true;
+  const requestNode = active;
   try {
     const editingProfile = $("#profilePanel").contains(document.activeElement);
     const r = await api(active, "/api/field/profile");
+    if (active !== requestNode) return;
+    refreshFailures = 0;
+    $("#connectionState").textContent = active.name + " · " + active.username;
     profile = r.profile;
     if (r.feedbackPrompt && r.feedbackPrompt.token !== shownFeedbackToken) {
       shownFeedbackToken = r.feedbackPrompt.token;
@@ -178,20 +211,28 @@ async function refresh() {
     }
     $("#profileRole").hidden = profile.role !== "owner";
     $("#profileRole").textContent = profile.role === "owner" ? "THE UNICORN · OWNER" : "";
-    $("#ownerFromChat").hidden = profile.role !== "owner";
+    $("#ownerFromChat").hidden = publicFieldAccess || profile.role !== "owner";
     $("#send").disabled = r.running;
     render();
   } catch (e) {
-    toast(e.message);
+    refreshFailures += 1;
+    if (active) $("#connectionState").textContent = "Connection interrupted · retrying automatically";
+  } finally {
+    refreshing = false;
+    if (active) timer = setTimeout(refresh, Math.min(30000, 1500 * 2 ** refreshFailures));
   }
 }
 function render() {
   const m = profile.messages || [];
+  const signature = JSON.stringify(m);
+  if ($("#messages").dataset.signature === signature) return;
+  $("#messages").dataset.signature = signature;
+  const nearBottom = $("#messages").scrollHeight - $("#messages").scrollTop - $("#messages").clientHeight < 100;
   $("#messages").innerHTML = m.length
     ? m
         .map(
           (x) =>
-            `<article class="message ${esc(x.role)}${x.human ? " human" : ""}"><small>${x.role === "user" ? "YOU" : x.human ? "THE UNICORN · HUMAN REPLY" : `${esc(x.personalityName || "FORGE")} · ${esc(x.model || "LOCAL MODEL")}`}${x.pending ? " · LIVE" : ""}</small>${esc(x.text)}${
+            `<article class="message ${esc(x.role)}${x.human ? " human" : ""}"><small>${x.role === "user" ? (x.ownerTest ? "THE UNICORN · OWNER TEST" : "YOU") : x.human ? "THE UNICORN · HUMAN REPLY" : `${esc(x.personalityName || "FORGE")} · ${esc(x.model || "LOCAL MODEL")}`}${x.pending ? " · LIVE" : ""}</small>${esc(x.text)}${
               x.activity?.length
                 ? `<div class="activity">${x.activity
                     .slice(-10)
@@ -204,8 +245,8 @@ function render() {
             }</article>`,
         )
         .join("")
-    : '<p class="empty">Your private tester chat is empty.</p>';
-  $("#messages").scrollTop = $("#messages").scrollHeight;
+    : '<p class="empty">What would you like to work on? Forge adapts as you talk; no personality questionnaire needed.</p>';
+  if (nearBottom) $("#messages").scrollTop = $("#messages").scrollHeight;
 }
 function credentialJSON(c) {
   return {
@@ -304,7 +345,9 @@ $("#clear").onclick = async () => {
     render();
   }
 };
-$("#logout").onclick = () => {
+$("#logout").onclick = async () => {
+  try { await Promise.all(nodes.map(node => api(node, "/api/field/logout", {}))); }
+  catch (error) { return toast("Could not log out. Check your connection and try again."); }
   clearInterval(timer);
   sessionStorage.removeItem("unicornforge.field.tokens");
   location.reload();
@@ -328,26 +371,70 @@ $("#composer").onsubmit = async (e) => {
   }
 };
 const a = JSON.parse(
-  localStorage.getItem("unicornforge.field.addresses") || "{}",
+  (!publicFieldAccess && localStorage.getItem("unicornforge.field.addresses")) || "{}",
 );
 for (const id of ["tuf", "strix"]) if (a[id]) $("#" + id + "Url").value = a[id];
 try {
   nodes = JSON.parse(
-    sessionStorage.getItem("unicornforge.field.tokens") || "[]",
+    (!publicFieldAccess && sessionStorage.getItem("unicornforge.field.tokens")) || "[]",
   );
   if (nodes.length) openConsole();
 } catch {}
+if (publicFieldAccess) {
+  $("#loginPanel .connections").hidden = true;
+  $("#rememberAddresses").closest("label").hidden = true;
+  $("#ownerConsole").closest("details").hidden = true;
+  $("#computer").hidden = true;
+  $("#runMode").innerHTML = '<option value="single">Chat</option>';
+  $("#runMode").value = "single";
+  $("#publicTesterNotice").hidden = false;
+  window.addEventListener("DOMContentLoaded", async () => {
+    try {
+      const node = urls()[0];
+      const session = await raw(node, "/api/field/session");
+      nodes = [{ ...node, ...session, online: true }];
+      await openConsole();
+    } catch { if (!active) showPublicView("login"); }
+  });
+}
 let ownerNode = null,
   ownerToken = "",
   selectedOwnerUser = "",
   lastEnrollmentCode = "",
   ownerTimer;
+const ownerReplyDrafts = new Map();
 async function ownerRequest(path, body) {
   return raw(ownerNode, path, body, { "X-Field-Admin": ownerToken });
 }
+async function openTesterDebug(username) {
+  await ownerRequest('/api/field/admin/tester/profile?username=' + encodeURIComponent(username));
+  clearInterval(ownerTimer); clearTimeout(timer);
+  ownerDebugUser = username;
+  active = { ...ownerNode, username, name: 'Owner debugging' };
+  document.body.classList.add('chat-open');
+  $('#adminPanel').hidden = true; $('#consolePanel').hidden = false;
+  for (const id of ['settings','feedback','clear','logout','ownerFromChat','profilePanel','feedbackPanel']) $('#'+id).hidden = true;
+  $('#computer').closest('label').hidden = true; $('#runMode').closest('label').hidden = true; $('#chatPersonality').closest('label').hidden = true;
+  let banner = document.querySelector('#ownerDebugBanner');
+  if (!banner) { banner = document.createElement('aside'); banner.id='ownerDebugBanner'; banner.className='legal-card'; $('#consolePanel').prepend(banner); }
+  banner.hidden=false;
+  banner.innerHTML='<strong>Owner debugging · '+esc(username)+'</strong><p>This is the tester’s actual conversation. Your prompts are labeled as owner tests and do not train their personality.</p><button type="button" id="returnToOwner">Return to owner controls</button>';
+  $('#returnToOwner').onclick=async()=>{
+    clearTimeout(timer); ownerDebugUser=''; active=null; banner.hidden=true;
+    $('#consolePanel').hidden=true; $('#adminPanel').hidden=false; document.body.classList.remove('chat-open');
+    await refreshOwner(); ownerTimer=setInterval(()=>refreshOwner().catch(()=>{}),2000);
+  };
+  await refresh();
+}
 async function loadOwnerUser(username = selectedOwnerUser) {
   if (!username) return;
+  if (ownerLoading || ownerReplyBusy || ownerDebugUser) return;
+  const reply = document.querySelector('#ownerReplyForm textarea');
+  if (reply && selectedOwnerUser) ownerReplyDrafts.set(selectedOwnerUser, { message: reply.value, requestId: $('#ownerReplyForm').dataset.requestId || '' });
+  if (username === selectedOwnerUser && reply && (reply.value || document.activeElement === reply)) return;
   selectedOwnerUser = username;
+  ownerLoading = true;
+  try {
   const r = await ownerRequest(
       "/api/field/admin/user/" + encodeURIComponent(username),
     ),
@@ -356,13 +443,14 @@ async function loadOwnerUser(username = selectedOwnerUser) {
     readiness = r.tailoredReadiness || { messages: 0, words: 0, sessions: 0, requirements: { messages: 18, words: 700, sessions: 3 } },
     requirements = readiness.requirements || { messages: 18, words: 700, sessions: 3 },
     tailoredStatus = p.learnedPersonality ? `<article class="admin-record"><strong>${esc(p.learnedPersonality.name)} · tailoring complete</strong><p><b>Adaptation rationale:</b> ${esc(p.learnedPersonality.rationale || "No rationale recorded.")}</p><small>Evidence at last adaptation: ${p.learnedPersonality.evidence?.messages || 0} messages · ${p.learnedPersonality.evidence?.words || 0} words · ${p.learnedPersonality.evidence?.sessions || 0} sessions</small></article>` : `<article class="admin-record"><strong>Tailoring readiness</strong><p>${readiness.messages || 0}/${requirements.messages} messages · ${readiness.words || 0}/${requirements.words} words · ${readiness.sessions || 0}/${requirements.sessions} sessions</p><small>The tester sees no preview or progress indicator.</small></article>`;
+  if (selectedOwnerUser !== username || ownerDebugUser) return;
   $("#adminChat").innerHTML =
-    `<div class="owner-chat-heading"><div><h3>Live chat · ${esc(username)}</h3><p>${p.ownerTakeover ? "Human takeover active · model replies paused" : "Model replies active"} · ${r.access.enabled ? "Access enabled" : "Access disabled"} · ${sessions.length} live session(s)</p></div><div class="toolbar"><button class="ghost" data-owner-action="takeover">${p.ownerTakeover ? "Return to model" : "Take over chat"}</button><button class="ghost" data-owner-action="sessions">Revoke sessions</button><button class="danger" data-owner-action="access">${r.access.enabled ? "Disable access" : "Enable access"}</button></div></div><section><h3>Tailored personality</h3>${tailoredStatus}</section><div class="owner-live-chat">${(
+    `<div class="owner-chat-heading"><div><h3>Live chat · ${esc(username)}</h3><p>${p.ownerTakeover ? "Human takeover active · model replies paused" : "Model replies active"} · ${r.access.enabled ? "Access enabled" : "Access disabled"} · ${sessions.length} live session(s)</p></div><div class="toolbar"><button class="ghost" data-owner-action="debug">Open tester view</button><button class="ghost" data-owner-action="takeover">${p.ownerTakeover ? "Return to model" : "Take over chat"}</button><button class="ghost" data-owner-action="sessions">Revoke sessions</button><button class="danger" data-owner-action="access">${r.access.enabled ? "Disable access" : "Enable access"}</button></div></div><section><h3>Tailored personality</h3>${tailoredStatus}</section><div class="owner-live-chat">${(
       p.messages || []
     )
       .map(
         (m) =>
-          `<article class="message ${esc(m.role)}${m.human ? " human" : ""}"><small>${m.role === "user" ? "TESTER" : m.human ? "THE UNICORN · HUMAN" : esc(m.model || "MODEL")} · ${new Date(m.timestamp || Date.now()).toLocaleString()}</small>${esc(m.text)}${
+          `<article class="message ${esc(m.role)}${m.human ? " human" : ""}"><small>${m.role === "user" ? (m.ownerTest ? "THE UNICORN · OWNER TEST" : "TESTER") : m.human ? "THE UNICORN · HUMAN" : esc(m.model || "MODEL")} · ${new Date(m.timestamp || Date.now()).toLocaleString()}</small>${esc(m.text)}${
             m.activity?.length
               ? `<div class="activity">${m.activity
                   .slice(-20)
@@ -376,13 +464,29 @@ async function loadOwnerUser(username = selectedOwnerUser) {
       )
       .join(
         "",
-      )}</div><section><h3>Tester feedback</h3>${(p.testerFeedback||[]).slice().reverse().map(item=>`<article class="admin-record"><strong>${new Date(item.createdAt).toLocaleString()}</strong><p><b>${esc(item.question)}</b><br>${esc(item.message)}</p><small>${esc(item.model||"Model unavailable")} · ${esc(item.personality||"Personality unavailable")}</small></article>`).join("")||'<p class="empty">No direct feedback yet.</p>'}</section><form id="ownerReplyForm"><label>Reply as The Unicorn<textarea name="message" maxlength="12000" required placeholder="The tester will clearly see that this is a human reply."></textarea></label><button type="submit">Send human reply</button></form>`;
+      )}</div><section><h3>Tester feedback</h3>${(p.testerFeedback||[]).slice().reverse().map(item=>`<article class="admin-record"><strong>${new Date(item.createdAt).toLocaleString()}</strong><p><b>${esc(item.question)}</b><br>${esc(item.message)}</p><small>${esc(item.model||"Model unavailable")} · ${esc(item.personality||"Personality unavailable")}</small></article>`).join("")||'<p class="empty">No direct feedback yet.</p>'}</section><form id="ownerReplyForm"><label>Reply as The Unicorn<textarea name="message" maxlength="12000" required placeholder="The tester will clearly see that this is a human reply."></textarea></label><p class="empty">Human replies are labeled. Use Take over chat separately to pause AI replies.</p><button type="submit">Send human reply</button></form>`;
+  const draft = ownerReplyDrafts.get(username);
+  const replyInput = $('#ownerReplyForm textarea');
+  if (draft) { replyInput.value=draft.message; $('#ownerReplyForm').dataset.requestId=draft.requestId; }
+  replyInput.oninput=()=>{ delete $('#ownerReplyForm').dataset.requestId; ownerReplyDrafts.set(username,{message:replyInput.value,requestId:''}); };
   $("#ownerReplyForm").onsubmit = async (event) => {
     event.preventDefault();
-    const message = new FormData(event.currentTarget).get("message");
-    await ownerRequest("/api/field/admin/reply", { username, message });
+    if (ownerReplyBusy) return;
+    const form = event.currentTarget, message = new FormData(form).get("message");
+    form.dataset.requestId ||= crypto.randomUUID();
+    ownerReplyBusy = true;
+    form.querySelector('button[type="submit"]').disabled = true;
+    form.querySelector('textarea').readOnly = true;
+    try {
+      await ownerRequest("/api/field/admin/reply", { username, message, requestId: form.dataset.requestId });
+      form.reset(); delete form.dataset.requestId; ownerReplyDrafts.delete(username);
+      form.querySelector('textarea').blur();
+      toast('Human reply sent');
+    } catch (error) { toast(error.message); }
+    finally { ownerReplyBusy = false; form.querySelector('textarea').readOnly = false; form.querySelector('button[type="submit"]').disabled = false; }
     await loadOwnerUser(username);
   };
+  document.querySelector('[data-owner-action="debug"]').onclick = () => openTesterDebug(username).catch(error => toast(error.message));
   document.querySelector('[data-owner-action="takeover"]').onclick =
     async () => {
       await ownerRequest("/api/field/admin/takeover", {
@@ -403,8 +507,12 @@ async function loadOwnerUser(username = selectedOwnerUser) {
     });
     await refreshOwner();
   };
+  } finally { ownerLoading = false; }
 }
 async function refreshOwner() {
+  if (ownerRefreshBusy || ownerDebugUser || ownerReplyBusy) return;
+  ownerRefreshBusy = true;
+  try {
   const v = await ownerRequest("/api/field/admin/overview");
   $("#toggleTraffic").textContent = v.trafficEnabled
     ? "Stop all tester traffic"
@@ -469,6 +577,7 @@ async function refreshOwner() {
       }),
   );
   if (selectedOwnerUser) await loadOwnerUser(selectedOwnerUser);
+  } finally { ownerRefreshBusy = false; }
 }
 $("#ownerConsole").onclick = async () => {
   ownerNode = urls()[0];

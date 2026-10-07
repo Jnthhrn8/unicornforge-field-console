@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
-    <meta name="theme-color" content="#170c31" />
+    <meta name="theme-color" content="#090b10" />
     <meta
       name="description"
       content="Private pre-alpha field testing for Unicorn Forge."
@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="field-console.css" />
     <link rel="stylesheet" href="field-admin.css" />
     <link rel="stylesheet" href="field-mobile.css" />
+    <link rel="stylesheet" href="forge-app.css" />
   </head>
   <body>
     <div class="rainbow-line" aria-hidden="true"></div>
@@ -26,7 +27,7 @@
       <img class="mark" src="unicorn-logo.png" alt="Unicorn Forge circuit unicorn logo" />
       <div>
         <strong>UNICORN FORGE</strong
-        ><small>FIRST TESTERS · PRIVATE PRE-ALPHA</small>
+        ><small>PHONE COMMAND CENTER</small>
       </div>
       <nav>
         <button class="nav-link" data-view="welcome">Welcome</button
@@ -47,13 +48,14 @@
             accountable assistant.
           </p>
           <div class="hero-actions">
+            <a class="phone-app-link" href="https://forge.tetheredunicorn.com/">Open phone app</a>
             <a href="https://jnthhrn8.github.io/unicornforge-field-console/#owner-login">Owner sign in</a><button data-view="login">Enter the field test</button
             ><button class="ghost" data-view="details">
               Read the full disclosure
             </button>
           </div>
           <p class="microcopy">
-            Invitation only · Private Tailscale access · Alpha software may fail
+            Invitation only · Login required · Alpha software may fail
             spectacularly
           </p>
         </div>
@@ -152,8 +154,8 @@
             <b>08</b>
             <h3>Security</h3>
             <p>
-              Access requires tester credentials and an approved private
-              Tailscale network. Administrative actions require separate owner
+              Access requires tester credentials through the approved HTTPS
+              tester website or private Tailscale connection. Administrative actions require separate owner
               authentication. No system is perfectly secure.
             </p>
           </article>
@@ -216,8 +218,7 @@
         <p class="eyebrow">PRIVATE ACCESS</p>
         <h1>Tester access</h1>
         <p>
-          Each tester receives exactly one isolated chat, memory, and up to four
-          switchable personalities. Normal Forge data is never available here.
+          Your own chat, memory, and evolving conversational style. Login required.
         </p>
         <details class="access-flow" open>
           <summary>Request an invitation</summary>
@@ -234,61 +235,12 @@
               <p class="empty">Connect to the invited Tailscale network first. This address is supplied privately by The Unicorn and is not published here.</p>
             </div>
             <div class="form-grid">
-              <label
-                >Name *<input
-                  name="name"
-                  maxlength="120"
-                  required
-                  autocomplete="name" /></label
-              ><label
-                >Email *<input
-                  name="email"
-                  type="email"
-                  maxlength="254"
-                  required
-                  autocomplete="email" /></label
-              ><label
-                >Phone<input
-                  name="phone"
-                  type="tel"
-                  maxlength="40"
-                  autocomplete="tel" /></label
-              ><label
-                >Desired username *<input
-                  name="username"
-                  pattern="[a-z0-9][a-z0-9_-]{2,31}"
-                  maxlength="32"
-                  required
-                  placeholder="lowercase only"
-              /></label>
-              <label
-                >Approval notifications<input
-                  value="Private ntfy enrollment"
-                  readonly
-                  aria-label="Approval notifications use private ntfy enrollment" /></label
-              >
+              <label>Name *<input name="name" maxlength="120" required autocomplete="name" /></label>
+              <label>Email *<input name="email" type="email" maxlength="254" required autocomplete="email" /></label>
+              <label>Desired username *<input name="username" pattern="[a-z0-9][a-z0-9_-]{2,31}" maxlength="32" required autocomplete="username" placeholder="lowercase only" /></label>
             </div>
-            <label
-              >Why would you like to test Unicorn Forge? *<textarea
-                name="reason"
-                maxlength="2000"
-                required
-              ></textarea></label>
-            <fieldset>
-              <legend>Pre-personalize your Forge</legend>
-              <label>What should your assistant help you accomplish? *<textarea name="goals" maxlength="2000" required></textarea></label>
-              <div class="form-grid"><label>Communication style *<select name="communicationStyle" required><option>Concise and direct</option><option>Friendly and explanatory</option><option>Detailed and technical</option><option>Ask before assuming</option><option>Adapt to the task</option></select></label><label>AI experience *<select name="experience" required><option>New to AI assistants</option><option>Occasional user</option><option>Frequent user</option><option>Power user / developer</option></select></label><label>Desired assistant personality<input name="assistantStyle" maxlength="800"></label><label>Accessibility needs<input name="accessibility" maxlength="1200"></label></div>
-            </fieldset>
-            <fieldset>
-              <legend>Help tune the app before release</legend>
-              <label>Devices and operating systems *<input name="devices" maxlength="800" required></label>
-              <label>Real workflows Forge should handle *<textarea name="workflows" maxlength="1600" required></textarea></label>
-              <label>What frustrates you about current AI tools? *<textarea name="frustrations" maxlength="2000" required></textarea></label>
-              <label>One must-have capability for release *<textarea name="mustHave" maxlength="2000" required></textarea></label>
-              <div class="form-grid"><label>Comfort with these data practices *<select name="privacyComfort" required><option>Comfortable</option><option>Comfortable with questions</option><option>Unsure—please contact me</option></select></label><label>Testing availability *<input name="testingAvailability" maxlength="800" required></label></div>
-              <label>Anything else?<textarea name="other" maxlength="2000"></textarea></label>
-            </fieldset>
-            <button type="submit">Send completed access request</button>
+            <p class="empty">Start with what you need. Forge learns your preferred style as you talk, and you can correct it at any time.</p>
+            <button type="submit">Send access request</button>
           </form>
         </details>
         <details class="access-flow">
@@ -329,6 +281,7 @@
         <hr />
         <p><a href="https://jnthhrn8.github.io/unicornforge-field-console/#owner-login">Owner sign in</a></p>
         <h2>Tester sign in</h2>
+        <p id="publicTesterNotice" hidden>Log in to your personal tester chat, memory, and personalities. Website access supports conversation; computer tools are unavailable here.</p>
         <div class="connections">
           <fieldset>
             <legend>TUF</legend>
@@ -371,7 +324,7 @@
       <section id="onboardingPanel" class="card" hidden>
         <div class="section-heading">
           <p class="eyebrow">MAKE IT YOURS</p>
-          <h2>A few questions before your first chat</h2>
+          <h2>Optional profile details</h2>
           <p>
             Contact details remain in your original record and are removed from
             retained training data. Required fields are marked.
@@ -618,7 +571,7 @@
               maxlength="16000"
             ></textarea></label
           ><fieldset class="personality-editor">
-            <legend>Personality studio · up to 4</legend>
+            <legend>Optional style overrides</legend>
             <div class="form-grid">
               <label>Edit personality<select id="personalityEditor"></select></label>
               <label>Name<input id="personalityName" maxlength="40" placeholder="Let the AI choose or enter a name" /></label>
@@ -667,6 +620,7 @@
       ><span>[Operator contact · Effective date · Jurisdiction]</span>
     </footer>
     <div id="toast" role="status"></div>
+    <script src="forge-wellbeing.js"></script>
     <script src="field-console-v2.js"></script>
     <script src="field-compliance.js"></script>
     <script src="field-onboarding.js"></script>
