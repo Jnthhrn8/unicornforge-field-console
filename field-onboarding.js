@@ -211,7 +211,7 @@ openConsole = async function () {
 };
 
 
-// Keep owner WebAuthn on the origin where the security key was enrolled.
+// Keep owner authentication on its registered origin.
 function showOwnerLogin() {
   if (location.hash !== "#owner-login") return;
   if (document.documentElement.dataset.publicField === "true") {
