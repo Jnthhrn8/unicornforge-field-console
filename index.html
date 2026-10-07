@@ -33,7 +33,7 @@
         <button class="nav-link" data-view="welcome">Welcome</button
         ><button class="nav-link" data-view="details">What to know</button
         ><button class="nav-link" data-view="credits">Credits</button>
-        <a class="nav-link" href="https://jnthhrn8.github.io/unicornforge-field-console/#owner-login">Owner sign in</a>
+        <a class="nav-link" href="https://jnthhrn8.github.io/unicornforge-field-console/#owner-login">Unicorn’s Entrance</a>
       </nav>
       <span id="connectionState">Logged out</span>
     </header>
@@ -49,7 +49,7 @@
           </p>
           <div class="hero-actions">
             <a class="phone-app-link" href="https://forge.tetheredunicorn.com/">Open phone app</a>
-            <a href="https://jnthhrn8.github.io/unicornforge-field-console/#owner-login">Owner sign in</a><button data-view="login">Enter the field test</button
+            <a href="https://jnthhrn8.github.io/unicornforge-field-console/#owner-login">Unicorn’s Entrance</a><button data-view="login">Enter the field test</button
             ><button class="ghost" data-view="details">
               Read the full disclosure
             </button>
@@ -279,7 +279,7 @@
           </form>
         </details>
         <hr />
-        <p><a href="https://jnthhrn8.github.io/unicornforge-field-console/#owner-login">Owner sign in</a></p>
+        <p><a href="https://jnthhrn8.github.io/unicornforge-field-console/#owner-login">Unicorn’s Entrance</a></p>
         <h2>Tester sign in</h2>
         <p id="publicTesterNotice" hidden>Log in to your personal tester chat, memory, and personalities. Website access supports conversation; computer tools are unavailable here.</p>
         <div class="connections">
@@ -313,12 +313,12 @@
           non-secret computer addresses</label
         ><button id="login">Log in securely</button>
         <details>
-          <summary>Owner sign in</summary>
+          <summary>Unicorn’s Entrance</summary>
           <p>
             Connect this device to Tailscale, then continue with your owner account.
-            Owner access is separate from tester sign-in.
+            Unicorn’s Entrance is separate from tester sign-in.
           </p>
-          <button id="ownerConsole" class="ghost">Continue as owner</button>
+          <button id="ownerConsole" class="ghost">Unicorn, enter here</button>
         </details>
       </section>
       <section id="onboardingPanel" class="card" hidden>
@@ -546,6 +546,7 @@
       </section>
       <section id="consolePanel" class="card" hidden>
         <div class="toolbar">
+          <button id="expandChat" type="button" class="ghost" aria-pressed="false">Expand chat</button>
           <label>Active computer<select id="computer"></select></label
           ><label>Model<select id="model"></select></label
           ><label>Personality<select id="chatPersonality"></select></label

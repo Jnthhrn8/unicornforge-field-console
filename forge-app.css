@@ -72,3 +72,27 @@ html[data-public-field="true"] #consolePanel > .toolbar label:has(#computer),htm
 .chat-open #composer { flex:none; padding-bottom:36px; }
 .chat-open #profilePanel { overflow:auto; max-height:45vh; }
 @media(max-width:760px){ .chat-open header { min-height:64px; } .chat-open #consolePanel>.toolbar { gap:6px; } .chat-open #consolePanel>.toolbar label { margin-bottom:0; } }
+
+/* Reserve readable conversation space, including in owner debug mode. */
+.chat-open { overflow-y:auto; }
+.chat-open main { min-height:560px; }
+.chat-open .messages { min-height:300px; font-size:16px; }
+.chat-open .message { font-size:16px; line-height:1.75; }
+.chat-open #consolePanel > .toolbar { padding:8px 16px; }
+.chat-open #consolePanel > .toolbar label { margin-bottom:0; }
+#ownerDebugBanner { flex:none; margin:0; padding:8px 16px; border-radius:0; font-size:12px; }
+#ownerDebugBanner p { margin:4px 0; font-size:12px; }
+#ownerDebugBanner button { padding:5px 9px; font-size:12px; }
+#adminChat .owner-live-chat { max-height:none; overflow:visible; font-size:16px; }
+#adminChat .message { font-size:16px; line-height:1.75; }
+.chat-expanded header { display:none; }
+.chat-expanded #consolePanel > .toolbar > :not(#expandChat) { display:none!important; }
+.chat-expanded #ownerDebugBanner p { display:none; }
+.chat-expanded #ownerDebugBanner { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.chat-expanded .messages { padding-top:12px; }
+@media(max-width:760px) {
+ .chat-open main { min-height:520px; }
+ .chat-open #composer textarea { min-height:60px; height:60px; }
+ .chat-open #composer { padding-top:8px; padding-bottom:32px; }
+ .chat-open #consolePanel>.toolbar { padding:8px 12px; }
+}

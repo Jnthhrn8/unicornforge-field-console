@@ -421,7 +421,8 @@ async function openTesterDebug(username) {
   banner.innerHTML='<strong>Owner debugging · '+esc(username)+'</strong><p>This is the tester’s actual conversation. Your prompts are labeled as owner tests and do not train their personality.</p><button type="button" id="returnToOwner">Return to owner controls</button>';
   $('#returnToOwner').onclick=async()=>{
     clearTimeout(timer); ownerDebugUser=''; active=null; banner.hidden=true;
-    $('#consolePanel').hidden=true; $('#adminPanel').hidden=false; document.body.classList.remove('chat-open');
+    $('#consolePanel').hidden=true; $('#adminPanel').hidden=false; document.body.classList.remove('chat-open', 'chat-expanded');
+    if ($('#expandChat')) { $('#expandChat').textContent='Expand chat'; $('#expandChat').setAttribute('aria-pressed','false'); }
     await refreshOwner(); ownerTimer=setInterval(()=>refreshOwner().catch(()=>{}),2000);
   };
   await refresh();
@@ -624,4 +625,11 @@ $("#closeAdmin").onclick = () => {
   selectedOwnerUser = "";
   lastEnrollmentCode = "";
   $("#connectionState").textContent = "Logged out";
+};
+
+const expandChatButton = document.querySelector('#expandChat');
+if (expandChatButton) expandChatButton.onclick = () => {
+  const expanded = document.body.classList.toggle('chat-expanded');
+  expandChatButton.textContent = expanded ? 'Restore layout' : 'Expand chat';
+  expandChatButton.setAttribute('aria-pressed', String(expanded));
 };
