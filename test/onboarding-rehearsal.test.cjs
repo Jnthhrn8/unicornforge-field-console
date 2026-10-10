@@ -40,7 +40,11 @@ test("applicants without an invitation use the secure queue", () => {
   assert.doesNotMatch(onboarding, /URL\.createObjectURL/);
 });
 
-test("private invitation addresses remain Tailscale HTTPS only", () => {
-  assert.match(onboarding, /protocol !== "https:"/);
-  assert.match(onboarding, /endsWith\("\.ts\.net"\)/);
+test("testers use the public website without private addresses", () => {
+  assert.doesNotMatch(html, /hasInvitationAddress|requestForgeUrl|tail0e71ff/);
+  assert.doesNotMatch(onboarding, /tail0e71ff|private Tailscale HTTPS address/);
+  assert.match(html, /id="ownerAccess" hidden/);
+  const entry = fs.readFileSync(path.join(root, 'field-entry.js'), 'utf8');
+  assert.match(entry, /forge\.tetheredunicorn\.com/);
+  assert.match(entry, /#owner-login/);
 });

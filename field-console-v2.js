@@ -97,7 +97,7 @@ async function raw(n, p, body, headers = {}) {
     },
     body: body === undefined ? undefined : JSON.stringify(body),
     cache: "no-store",
-    signal: AbortSignal.timeout(20000),
+    signal: AbortSignal.timeout(p.startsWith('/api/field/admin/invites') ? 90000 : 20000),
     credentials: publicFieldAccess ? "same-origin" : "omit",
   });
   let x;
@@ -381,7 +381,7 @@ try {
   if (nodes.length) openConsole();
 } catch {}
 if (publicFieldAccess) {
-  $("#loginPanel .connections").hidden = true;
+  $("#ownerAccess").hidden = true;
   $("#rememberAddresses").closest("label").hidden = true;
   $("#ownerConsole").closest("details").hidden = true;
   $("#computer").hidden = true;
@@ -617,10 +617,12 @@ $("#toggleTraffic").onclick = async () => {
   await refreshOwner();
 };
 $("#closeAdmin").onclick = () => {
+  if (inviteBusy) return toast("Wait for the invitation operation to finish.");
   clearInterval(ownerTimer);
   $("#adminPanel").hidden = true;
   $("#loginPanel").hidden = false;
   $("#consentNotice").hidden = false;
+  invitePanel.hidden = true; $("#inviteForm").reset(); $("#inviteMailForm").reset(); $("#inviteLetter").value = ""; $("#inviteLetterPanel").hidden = true; $("#inviteResult").textContent = "";
   ownerToken = "";
   selectedOwnerUser = "";
   lastEnrollmentCode = "";
@@ -632,4 +634,39 @@ if (expandChatButton) expandChatButton.onclick = () => {
   const expanded = document.body.classList.toggle('chat-expanded');
   expandChatButton.textContent = expanded ? 'Restore layout' : 'Expand chat';
   expandChatButton.setAttribute('aria-pressed', String(expanded));
+};
+
+// Invitation drafts live outside the refreshed owner overview.
+const invitePanel = $('#invitePanel');
+let inviteBusy = false;
+$('#openInvite').onclick = async () => {
+  invitePanel.hidden = false;
+  $('#inviteForm [name="email"]').focus();
+  try { const result = await ownerRequest('/api/field/admin/invites/settings'); $('#inviteMailStatus').textContent = result.configured ? 'Gmail connected: ' + result.sender : 'Gmail is not connected. Create a code to copy, or connect Gmail below.'; $('#inviteEmailSettings').open = !result.configured; }
+  catch(error) { $('#inviteMailStatus').textContent = error.message; }
+};
+$('#closeInvite').onclick = () => { if (!inviteBusy) { invitePanel.hidden=true; $('#inviteLetter').value=''; $('#inviteLetterPanel').hidden=true; $('#inviteResult').textContent=''; $('#inviteMailForm').reset(); } };
+$('#inviteForm').onsubmit = async event => {
+  event.preventDefault(); if (inviteBusy) return;
+  const form=event.currentTarget, values=Object.fromEntries(new FormData(form));
+  values.delivery=event.submitter?.value || 'email';
+  inviteBusy=true; form.querySelectorAll('button').forEach(button=>button.disabled=true);
+  $('#inviteResult').textContent=values.delivery==='email' ? 'Sending invitation…' : 'Creating invitation…';
+  $('#inviteLetter').value=''; $('#inviteLetterPanel').hidden=true;
+  try {
+    const result=await ownerRequest('/api/field/admin/invites',values);
+    $('#inviteResult').textContent=(result.letter ? 'Invitation created for @'+result.username : 'Gmail accepted the invitation to '+result.email+' for sending')+'. Expires '+new Date(result.expiresAt).toLocaleString()+'.';
+    if(result.letter){$('#inviteLetter').value=result.letter;$('#inviteLetterPanel').hidden=false;}
+    form.reset();
+  } catch(error) { $('#inviteResult').textContent=error.message; }
+  finally {inviteBusy=false;form.querySelectorAll('button').forEach(button=>button.disabled=false);}
+};
+$('#copyInvite').onclick = async () => { try { await navigator.clipboard.writeText($('#inviteLetter').value); toast('Invitation copied'); } catch { $('#inviteLetter').focus(); $('#inviteLetter').select(); toast('Select and copy the invitation text'); } };
+$('#inviteMailForm').onsubmit = async event => {
+  event.preventDefault();if(inviteBusy)return;inviteBusy=true;const form=event.currentTarget,button=form.querySelector('button');button.disabled=true;
+  $('#inviteMailStatus').textContent='Checking Gmail connection…';
+  const appPassword=new FormData(form).get('appPassword');form.reset();
+  try {const result=await ownerRequest('/api/field/admin/invites/settings',{appPassword});$('#inviteMailStatus').textContent='Gmail connected: '+result.sender;}
+  catch(error){$('#inviteMailStatus').textContent=error.message;}
+  finally{inviteBusy=false;button.disabled=false;}
 };

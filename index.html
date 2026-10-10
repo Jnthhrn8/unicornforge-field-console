@@ -12,6 +12,7 @@
       content="Private pre-alpha field testing for Unicorn Forge."
     />
     <title>Unicorn Forge · First Testers</title>
+    <script src="field-entry.js"></script>
     <link rel="icon" type="image/png" href="unicorn-logo.png" />
     <link rel="stylesheet" href="field-console.css" />
     <link rel="stylesheet" href="field-admin.css" />
@@ -155,7 +156,7 @@
             <h3>Security</h3>
             <p>
               Access requires tester credentials through the approved HTTPS
-              tester website or private Tailscale connection. Administrative actions require separate owner
+              tester website. Administrative actions require separate owner
               authentication. No system is perfectly secure.
             </p>
           </article>
@@ -215,7 +216,7 @@
         >
       </aside>
       <section id="loginPanel" class="card" hidden>
-        <p class="eyebrow">PRIVATE ACCESS</p>
+        <p class="eyebrow">TESTER ACCESS</p>
         <h1>Tester access</h1>
         <p>
           Your own chat, memory, and evolving conversational style. Login required.
@@ -228,12 +229,7 @@
             or guaranteed.
           </p>
           <form id="accessRequestForm">
-            <label class="remember"><input id="hasInvitationAddress" name="hasInvitationAddress" type="checkbox" /> I already have a private invitation address</label>
-            <p id="noInvitationAddress" class="empty">If you are chosen, a private address and connection instructions will be sent to you privately. You can complete and send this request now.</p>
-            <div id="invitationAddressFields" hidden>
-              <label>Private invitation address *<input name="requestForgeUrl" type="url" inputmode="url" autocomplete="off" placeholder="Paste the private address from your invitation" /></label>
-              <p class="empty">Connect to the invited Tailscale network first. This address is supplied privately by The Unicorn and is not published here.</p>
-            </div>
+            <p class="empty">Once approved, enter your enrollment code here and create a password.</p>
             <div class="form-grid">
               <label>Name *<input name="name" maxlength="120" required autocomplete="name" /></label>
               <label>Email *<input name="email" type="email" maxlength="254" required autocomplete="email" /></label>
@@ -282,6 +278,15 @@
         <p><a href="https://jnthhrn8.github.io/unicornforge-field-console/#owner-login">Unicorn’s Entrance</a></p>
         <h2>Tester sign in</h2>
         <p id="publicTesterNotice" hidden>Log in to your personal tester chat, memory, and personalities. Website access supports conversation; computer tools are unavailable here.</p>
+        <label>Username<input id="username" autocomplete="username" /></label
+        ><label
+          >Password<input
+            id="password"
+            type="password"
+            autocomplete="current-password" /></label
+        ><button id="login">Log in securely</button>
+        <details id="ownerAccess" hidden>
+          <summary>Unicorn’s Entrance</summary>
         <div class="connections">
           <fieldset>
             <legend>TUF</legend>
@@ -302,18 +307,7 @@
             ><span id="strixState">Not checked</span>
           </fieldset>
         </div>
-        <label>Username<input id="username" autocomplete="username" /></label
-        ><label
-          >Password<input
-            id="password"
-            type="password"
-            autocomplete="current-password" /></label
-        ><label class="remember"
-          ><input id="rememberAddresses" type="checkbox" checked /> Remember
-          non-secret computer addresses</label
-        ><button id="login">Log in securely</button>
-        <details>
-          <summary>Unicorn’s Entrance</summary>
+          <label class="remember"><input id="rememberAddresses" type="checkbox" /> Remember this owner connection on this device</label>
           <p>
             Connect this device to Tailscale, then continue with your owner account.
             Unicorn’s Entrance is separate from tester sign-in.
@@ -512,12 +506,25 @@
       <section id="adminPanel" class="card" hidden>
         <div class="toolbar">
           <h2>The Unicorn control panel</h2>
+          <button id="openInvite" type="button">Send invite</button>
           <button id="toggleTraffic" class="danger">
             Stop all tester traffic</button
           ><button id="refreshAdmin" class="ghost">Refresh now</button
           ><button id="refreshNtfyAdmin" class="ghost">Refresh ntfy channels</button
           ><button id="closeAdmin" class="ghost">Close</button>
         </div>
+        <section id="invitePanel" hidden>
+          <h3>Invite a tester</h3>
+          <p>Create access directly. The tester chooses their own password and accepts the field-test notice.</p>
+          <form id="inviteForm">
+            <div class="form-grid"><label>Name (optional)<input name="name" maxlength="120" autocomplete="off"></label><label>Email<input name="email" type="email" maxlength="254" required autocomplete="off"></label><label>Tester username<input name="username" minlength="3" maxlength="32" required autocomplete="off"></label></div>
+            <div class="toolbar"><button type="submit" name="delivery" value="email">Send invite</button><button type="submit" name="delivery" value="copy" class="ghost">Create code to copy</button></div>
+          </form>
+          <p id="inviteResult" role="status" aria-live="polite"></p>
+          <div id="inviteLetterPanel" hidden><label>Private invitation<textarea id="inviteLetter" rows="12" readonly></textarea></label><button id="copyInvite" type="button">Copy invitation</button></div>
+          <details id="inviteEmailSettings"><summary>Gmail setup</summary><p id="inviteMailStatus" role="status"></p><p>For tetheredunicorn@gmail.com, create a Google app password named Forge. Enter it here once; Forge encrypts it on this computer.</p><p><a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer">Create a Google app password</a> (requires Google 2-Step Verification).</p><form id="inviteMailForm"><label>Google app password<input name="appPassword" type="password" autocomplete="new-password" required maxlength="32"></label><button type="submit">Connect Gmail</button></form></details>
+          <button id="closeInvite" class="ghost" type="button">Close invitation panel</button>
+        </section>
         <div id="adminStats"></div>
         <details class="access-flow"><summary>Private ntfy enrollment</summary><p>Access requests and approval packages use the bundled private ntfy service. No paid email or SMS provider is used. Private Forge and ntfy addresses are included only after approval and are never published on this site.</p><p id="messagingStatus" class="empty">ntfy status is reported by the private Forge host.</p><div id="adminNtfyChannels" class="ntfy-channel-status"></div></details>
         <div class="connections">

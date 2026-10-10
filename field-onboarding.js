@@ -8,6 +8,7 @@ const publicViews = {
   credits: document.querySelector("#creditsPanel"),
 };
 function showPublicView(name) {
+  if (name === "login" && location.hostname === "jnthhrn8.github.io" && location.hash !== "#owner-login") { location.assign("https://forge.tetheredunicorn.com/#login"); return; }
   Object.values(publicViews).forEach((view) => (view.hidden = true));
   document.querySelector("#consentNotice").hidden = name !== "login";
   if (publicViews[name]) publicViews[name].hidden = false;
@@ -18,16 +19,6 @@ document
   .forEach((button) =>
     button.addEventListener("click", () => showPublicView(button.dataset.view)),
   );
-const invitationToggle = document.querySelector("#hasInvitationAddress");
-if (publicFieldAccess) {
-  invitationToggle.closest("label").hidden = true;
-  document.querySelector("#noInvitationAddress").textContent = "Request access here. Once approved, use your enrollment code to create a password and log in on this website.";
-}
-invitationToggle.addEventListener("change", () => {
-  document.querySelector("#invitationAddressFields").hidden = !invitationToggle.checked;
-  document.querySelector("#noInvitationAddress").hidden = invitationToggle.checked;
-  document.querySelector('[name="requestForgeUrl"]').required = invitationToggle.checked;
-});
 document
   .querySelector("#accessRequestForm")
   .addEventListener("submit", async (event) => {
@@ -36,17 +27,7 @@ document
       return toast("Read and accept the field-test notice before requesting access");
     if (!document.querySelector("#ageConfirmed").checked)
       return toast("You must confirm that you are at least 18 years old");
-    const hasInvitationAddress = !publicFieldAccess && invitationToggle.checked;
-    const invitationAddress = String(new FormData(event.currentTarget).get("requestForgeUrl") || "").trim().replace(/\/$/, "");
-    let node = publicFieldAccess ? urls()[0] : null;
-    if (hasInvitationAddress) {
-      let parsedInvitationAddress;
-      try { parsedInvitationAddress = new URL(invitationAddress); }
-      catch { return toast("Paste the complete private address from your invitation"); }
-      if (parsedInvitationAddress.protocol !== "https:" || !parsedInvitationAddress.hostname.toLowerCase().endsWith(".ts.net")) return toast("The invitation must use a private Tailscale HTTPS address");
-      document.querySelector("#tufUrl").value = invitationAddress;
-      node = urls()[0];
-    }
+    const node = publicFieldAccess ? urls()[0] : null;
     const identity = formRecord(event.currentTarget, [
       "name",
       "email",
@@ -94,8 +75,6 @@ document
         if (!response.ok)
           throw new Error(result.error || "The private request channel is unavailable");
         event.currentTarget.reset();
-        document.querySelector("#invitationAddressFields").hidden = true;
-        document.querySelector("#noInvitationAddress").hidden = false;
         toast(`Request sent privately · reference ${result.reference}`);
       } catch (error) {
         toast(error.message);
@@ -135,6 +114,8 @@ document
         username: values.username,
         code: values.code,
         password: values.password,
+        consent: true,
+        ageConfirmed: true,
       });
       document.querySelector("#username").value = values.username;
       document.querySelector("#password").value = values.password;
@@ -227,7 +208,7 @@ function showOwnerLogin() {
   const ownerButton = document.querySelector("#ownerConsole");
   ownerButton.closest("details").open = true;
   const address = document.querySelector("#tufUrl");
-  if (!address.value.trim()) address.value = "https://tuf-unicorn.tail0e71ff.ts.net:3211";
+  document.querySelector("#ownerAccess").hidden = false;
   ownerButton.focus();
   ownerButton.scrollIntoView({ block: "center" });
 }
