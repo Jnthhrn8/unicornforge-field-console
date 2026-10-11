@@ -582,9 +582,12 @@ async function refreshOwner() {
 }
 $("#ownerConsole").onclick = async () => {
   ownerNode = urls()[0];
-  if (!ownerNode) return toast("Enter a Forge address first");
+  if (!ownerNode) { $("#ownerLoginStatus").textContent = "Enter your private Forge address under TUF to connect. This is an owner-only setting; testers use forge.tetheredunicorn.com."; $("#tufUrl").focus(); return; }
+  $("#ownerLoginStatus").textContent = "Connecting to Forge…";
   try {
     ownerToken = await adminToken(ownerNode);
+    $("#ownerLoginPanel").hidden = true;
+    $("#ownerLoginStatus").textContent = "";
     $("#loginPanel").hidden = true;
     $("#consentNotice").hidden = true;
     $("#adminPanel").hidden = false;
@@ -593,6 +596,7 @@ $("#ownerConsole").onclick = async () => {
     clearInterval(ownerTimer);
     ownerTimer = setInterval(() => refreshOwner().catch(() => {}), 2000);
   } catch (e) {
+    $("#ownerLoginStatus").textContent = e.message;
     toast(e.message);
   }
 };
@@ -627,6 +631,7 @@ $("#closeAdmin").onclick = () => {
   selectedOwnerUser = "";
   lastEnrollmentCode = "";
   $("#connectionState").textContent = "Logged out";
+  showOwnerLogin();
 };
 
 const expandChatButton = document.querySelector('#expandChat');

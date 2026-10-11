@@ -48,12 +48,9 @@
             workspace learning how to become a more capable, personal, and
             accountable assistant.
           </p>
-          <div class="hero-actions">
-            <a class="phone-app-link" href="https://forge.tetheredunicorn.com/">Open phone app</a>
-            <a href="https://jnthhrn8.github.io/unicornforge-field-console/#owner-login">Unicorn’s Entrance</a><button data-view="login">Enter the field test</button
-            ><button class="ghost" data-view="details">
-              Read the full disclosure
-            </button>
+          <div class="entry-options">
+            <section class="entry-option"><span class="entry-label">FOR TESTERS</span><h2>Your Forge workspace</h2><p>Sign in, request access, or use your invitation code.</p><button type="button" class="entry-button" data-view="login">Open Forge</button><button type="button" class="entry-text-link" data-view="details">Read the field-test guide</button></section>
+            <section class="entry-option owner-option"><span class="entry-label">FOR THE OWNER</span><h2>Unicorn’s Entrance</h2><p>Manage testers, send invitations, and review activity.</p><a class="entry-button secondary" href="https://jnthhrn8.github.io/unicornforge-field-console/#owner-login" target="_blank" rel="noopener noreferrer">Open owner controls <span aria-hidden="true">↗</span></a></section>
           </div>
           <p class="microcopy">
             Invitation only · Login required · Alpha software may fail
@@ -285,7 +282,11 @@
             type="password"
             autocomplete="current-password" /></label
         ><button id="login">Log in securely</button>
-        <details id="ownerAccess" hidden>
+
+      </section>
+      <section id="ownerLoginPanel" class="card owner-login-card" hidden>
+        <p class="eyebrow">OWNER ACCESS</p><h1>Unicorn’s Entrance</h1><p>Connect to your private Forge computer, then verify your owner sign-in.</p>
+        <details id="ownerAccess" open>
           <summary>Unicorn’s Entrance</summary>
         <div class="connections">
           <fieldset>
@@ -294,7 +295,7 @@
               >Private Forge address<input
                 id="tufUrl"
                 inputmode="url"
-                placeholder="Provided in your approval letter" /></label
+                placeholder="Your saved private Forge address" /></label
             ><span id="tufState">Not checked</span>
           </fieldset>
           <fieldset>
@@ -314,6 +315,8 @@
           </p>
           <button id="ownerConsole" class="ghost">Unicorn, enter here</button>
         </details>
+        <p id="ownerLoginStatus" role="status" aria-live="polite"></p>
+        <a class="entry-text-link" href="https://forge.tetheredunicorn.com/#login">Looking for tester sign-in? Open Forge</a>
       </section>
       <section id="onboardingPanel" class="card" hidden>
         <div class="section-heading">

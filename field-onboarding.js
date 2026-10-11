@@ -2,6 +2,7 @@
 const PUBLIC_REQUEST_ENDPOINT =
   "https://messages.tetheredunicorn.com/field-request";
 const publicViews = {
+  owner: document.querySelector("#ownerLoginPanel"),
   welcome: document.querySelector("#welcomePanel"),
   details: document.querySelector("#detailsPanel"),
   login: document.querySelector("#loginPanel"),
@@ -203,23 +204,14 @@ function showOwnerLogin() {
     location.assign("https://jnthhrn8.github.io/unicornforge-field-console/#owner-login");
     return;
   }
-  showPublicView("login");
+  showPublicView("owner");
   document.querySelector("#consentNotice").hidden = true;
   const ownerButton = document.querySelector("#ownerConsole");
   ownerButton.closest("details").open = true;
-  const address = document.querySelector("#tufUrl");
   document.querySelector("#ownerAccess").hidden = false;
   ownerButton.focus();
   ownerButton.scrollIntoView({ block: "center" });
 }
 window.addEventListener("hashchange", showOwnerLogin);
-document.querySelectorAll('a[href$="#owner-login"]').forEach((link) => {
-  link.addEventListener("click", (event) => {
-    if (location.origin === "https://jnthhrn8.github.io") {
-      event.preventDefault();
-      location.hash = "owner-login";
-      showOwnerLogin();
-    }
-  });
-});
+
 showOwnerLogin();

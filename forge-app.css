@@ -96,3 +96,20 @@ html[data-public-field="true"] #consolePanel > .toolbar label:has(#computer),htm
  .chat-open #composer { padding-top:8px; padding-bottom:32px; }
  .chat-open #consolePanel>.toolbar { padding:8px 12px; }
 }
+
+/* Distinct, aligned entry points for testers and the owner. */
+.entry-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin:26px 0 18px; }
+.entry-option { display:flex; flex-direction:column; align-items:stretch; padding:20px; border:1px solid var(--line); border-radius:12px; background:var(--panel); min-width:0; }
+.entry-label { color:var(--gold); font-size:10px; letter-spacing:.14em; font-weight:700; }
+.entry-option h2 { margin:10px 0 6px; font-size:19px; }
+.entry-option p { margin:0 0 20px; font-size:13px; line-height:1.6; }
+.entry-button { display:flex; align-items:center; justify-content:center; gap:10px; min-height:46px; width:100%; padding:12px 16px; border:1px solid var(--gold); border-radius:8px; background:var(--gold); color:#17130b; font:600 13px "Segoe UI",sans-serif; text-decoration:none; cursor:pointer; margin-top:auto; }
+.entry-button.secondary { background:var(--panel2); color:var(--text); border-color:#485166; }
+.entry-button:hover { filter:brightness(1.12); }
+.entry-button:focus-visible,.entry-text-link:focus-visible { outline:2px solid var(--gold); outline-offset:4px; }
+.entry-text-link { display:inline-block; background:none; border:0; color:var(--muted); padding:12px 0 0; font-size:12px; font-weight:500; text-decoration:underline; text-underline-offset:3px; }
+.owner-option { padding-bottom:49px; }
+.owner-login-card { max-width:720px; margin:24px auto; }
+#ownerLoginStatus { color:var(--gold); overflow-wrap:anywhere; }
+#ownerAccess { margin-top:20px; }
+@media(max-width:600px) { .entry-options {grid-template-columns:1fr;} .owner-option {padding-bottom:20px;} .owner-login-card {margin:0;} }

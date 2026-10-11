@@ -43,8 +43,9 @@ test("applicants without an invitation use the secure queue", () => {
 test("testers use the public website without private addresses", () => {
   assert.doesNotMatch(html, /hasInvitationAddress|requestForgeUrl|tail0e71ff/);
   assert.doesNotMatch(onboarding, /tail0e71ff|private Tailscale HTTPS address/);
-  assert.match(html, /id="ownerAccess" hidden/);
+  assert.match(html, /id="ownerLoginPanel" class="card owner-login-card" hidden/);
   const entry = fs.readFileSync(path.join(root, 'field-entry.js'), 'utf8');
   assert.match(entry, /forge\.tetheredunicorn\.com/);
   assert.match(entry, /#owner-login/);
 });
+
