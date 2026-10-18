@@ -71,7 +71,7 @@ const bufToB64 = (b) =>
 function toast(t) {
   if (t === "Login failed on both Forge computers")
     t =
-      "The Unicorn Forge server is not running or is overloaded. Try again shortly.";
+      "Forge is taking a little breather. Please try again shortly.";
   $("#toast").textContent = t;
   $("#toast").classList.add("show");
   setTimeout(() => $("#toast").classList.remove("show"), 2500);
@@ -148,7 +148,7 @@ async function login() {
     $("#" + n.id + "State").textContent = n.online
       ? "Online · " + n.computer
       : "Unavailable · " + n.error;
-  if (!nodes.length) return toast(publicFieldAccess ? checked[0]?.error || "The tester server is unavailable" : "Login failed on both Forge computers");
+  if (!nodes.length) return toast(publicFieldAccess ? checked[0]?.error || "Forge is temporarily unavailable" : "Login failed on both Forge computers");
   if (!publicFieldAccess) sessionStorage.setItem("unicornforge.field.tokens", JSON.stringify(nodes));
   if (!publicFieldAccess && $("#rememberAddresses").checked)
     localStorage.setItem(
@@ -232,7 +232,7 @@ function render() {
     ? m
         .map(
           (x) =>
-            `<article class="message ${esc(x.role)}${x.human ? " human" : ""}"><small>${x.role === "user" ? (x.ownerTest ? "THE UNICORN · OWNER TEST" : "YOU") : x.human ? "THE UNICORN · HUMAN REPLY" : `${esc(x.personalityName || "FORGE")} · ${esc(x.model || "LOCAL MODEL")}`}${x.pending ? " · LIVE" : ""}</small>${esc(x.text)}${
+            `<article class="message ${esc(x.role)}${x.human ? " human" : ""}"><small>${x.role === "user" ? (x.ownerTest ? "THE UNICORN · OWNER TEST" : "YOU") : x.human ? "THE UNICORN · HUMAN REPLY" : `${esc(x.personalityName || "FORGE")}${publicFieldAccess ? "" : " · " + esc(x.model || "MODEL")}`}${x.pending ? " · LIVE" : ""}</small>${esc(x.text)}${
               x.activity?.length
                 ? `<div class="activity">${x.activity
                     .slice(-10)
@@ -384,7 +384,8 @@ if (publicFieldAccess) {
   $("#ownerAccess").hidden = true;
   $("#rememberAddresses").closest("label").hidden = true;
   $("#ownerConsole").closest("details").hidden = true;
-  $("#computer").hidden = true;
+  $("#computer").closest("label").hidden = true;
+  $("#model").closest("label").hidden = true;
   $("#runMode").innerHTML = '<option value="single">Chat</option>';
   $("#runMode").value = "single";
   $("#publicTesterNotice").hidden = false;
@@ -519,10 +520,12 @@ async function refreshOwner() {
     ? "Stop all tester traffic"
     : "Resume tester traffic";
   $("#toggleTraffic").dataset.enabled = String(v.trafficEnabled);
-  const pending = (v.requests || []).filter((r) => r.status === "pending");
+  const pending = (v.requests || []).filter((r) => r.status === "pending" && !r.ownerInvited);
+  const invitations = (v.requests || []).filter((r) => r.ownerInvited);
+  const invitationStatus = r => r.status === 'approved' && r.expiresAt && r.expiresAt <= Date.now() ? 'expired' : r.status;
   $("#messagingStatus").textContent = v.ntfy?.configured ? (v.ntfy.running ? "Private ntfy is connected." : v.ntfy.error || "Private ntfy is stopped.") : "Private ntfy is not configured.";
   $("#adminStats").innerHTML =
-    `<p><strong>${v.trafficEnabled ? "ACCEPTING TRAFFIC" : "TRAFFIC STOPPED"}</strong> · ${v.running.length} running jobs · ${v.sessions.length} connected devices · ${pending.length} pending requests</p><section><h3>Access requests</h3><div id="accessRequests">${pending.map((r) => `<article class="admin-record"><strong>${esc(r.name)} · @${esc(r.username)}</strong><small>${esc(r.email)} · ${esc(r.phone || "No phone")} · private ntfy enrollment · ${new Date(r.createdAt).toLocaleString()}</small><p><b>Why:</b> ${esc(r.reason)}</p><p><b>Goals:</b> ${esc(r.onboarding?.goals)}<br><b>Style / experience:</b> ${esc(r.onboarding?.communicationStyle)} · ${esc(r.onboarding?.experience)}<br><b>Devices:</b> ${esc(r.feedback?.devices)}<br><b>Workflows:</b> ${esc(r.feedback?.workflows)}<br><b>Frustrations:</b> ${esc(r.feedback?.frustrations)}<br><b>Must-have:</b> ${esc(r.feedback?.mustHave)}<br><b>Data comfort:</b> ${esc(r.feedback?.privacyComfort)} · <b>Availability:</b> ${esc(r.feedback?.testingAvailability)}</p><button data-approve-request="${esc(r.id)}">Approve & create ntfy package</button><button class="danger" data-deny-request="${esc(r.id)}">Deny</button></article>`).join("") || '<p class="empty">No pending requests.</p>'}</div><div id="enrollmentCode">${lastEnrollmentCode}</div></section>`;
+    `<p><strong>${v.trafficEnabled ? "ACCEPTING TRAFFIC" : "TRAFFIC STOPPED"}</strong> · ${v.running.length} running jobs · ${v.sessions.length} connected devices · ${pending.length} pending requests</p><section><h3>Access requests</h3><div id="accessRequests">${pending.map((r) => `<article class="admin-record"><strong>${esc(r.name)} · @${esc(r.username)}</strong><small>${esc(r.email)} · ${esc(r.phone || "No phone")} · private ntfy enrollment · ${new Date(r.createdAt).toLocaleString()}</small><p><b>ntfy:</b> ${esc(r.notification?.status || "unknown")}${r.notification?.status !== "sent" ? `<button data-retry-request="${esc(r.id)}">Retry notification</button>` : ""}</p><p><b>Why:</b> ${esc(r.reason)}</p><p><b>Goals:</b> ${esc(r.onboarding?.goals)}<br><b>Style / experience:</b> ${esc(r.onboarding?.communicationStyle)} · ${esc(r.onboarding?.experience)}<br><b>Devices:</b> ${esc(r.feedback?.devices)}<br><b>Workflows:</b> ${esc(r.feedback?.workflows)}<br><b>Frustrations:</b> ${esc(r.feedback?.frustrations)}<br><b>Must-have:</b> ${esc(r.feedback?.mustHave)}<br><b>Data comfort:</b> ${esc(r.feedback?.privacyComfort)} · <b>Availability:</b> ${esc(r.feedback?.testingAvailability)}</p><button data-approve-request="${esc(r.id)}">Approve & create ntfy package</button><button class="danger" data-deny-request="${esc(r.id)}">Deny</button></article>`).join("") || '<p class="empty">No pending requests.</p>'}</div><div id="enrollmentCode">${lastEnrollmentCode}</div></section><section><h3>Invitations</h3><div id="ownerInvitations">${invitations.map(r=>{const status=invitationStatus(r),sent=r.delivery?.sentAt||r.approvedAt;return `<article class="admin-record"><strong>${esc(r.name)} · @${esc(r.username)}</strong><small>${esc(r.email)} · ${esc(status.toUpperCase())}</small><p>Created ${new Date(r.createdAt).toLocaleString()}${sent?`<br>Sent ${new Date(sent).toLocaleString()}`:''}${r.expiresAt?`<br>Expires ${new Date(r.expiresAt).toLocaleString()}`:''}${r.claimedAt?`<br>Claimed ${new Date(r.claimedAt).toLocaleString()}`:''}</p>${status==='approved'?`<button class="ghost" data-replace-invite="${esc(r.id)}" data-name="${esc(r.name)}" data-username="${esc(r.username)}" data-email="${esc(r.email)}">Prepare replacement</button><button class="danger" data-revoke-invite="${esc(r.id)}">Revoke</button>`:''}</article>`}).join('')||'<p class="empty">No invitations yet.</p>'}</div></section>`;
   $("#adminDevices").innerHTML =
     v.sessions
       .map(
@@ -549,6 +552,9 @@ async function refreshOwner() {
   document
     .querySelectorAll("[data-approve-request]")
     .forEach((b) => (b.textContent = "Approve & create ntfy package"));
+  document.querySelectorAll("[data-retry-request]").forEach(b => { b.onclick=async()=>{b.disabled=true;try{await ownerRequest("/api/field/admin/access-request/notify",{id:b.dataset.retryRequest});await refreshOwner();}catch(error){toast(error.message);b.disabled=false;}};});
+  document.querySelectorAll('[data-revoke-invite]').forEach(button=>{button.onclick=async()=>{if(!confirm('Revoke this unclaimed invitation?'))return;button.disabled=true;try{await ownerRequest('/api/field/admin/invites/revoke',{id:button.dataset.revokeInvite});await refreshOwner();toast('Invitation revoked');}catch(error){toast(error.message);button.disabled=false;}};});
+  document.querySelectorAll('[data-replace-invite]').forEach(button=>{button.onclick=async()=>{if(!confirm('Revoke this invitation and prepare a replacement?'))return;button.disabled=true;try{await ownerRequest('/api/field/admin/invites/revoke',{id:button.dataset.replaceInvite});invitePanel.hidden=false;const form=$('#inviteForm');form.elements.name.value=button.dataset.name;form.elements.username.value=button.dataset.username;form.elements.email.value=button.dataset.email;form.scrollIntoView({block:'center'});toast('Old invitation revoked. Review and send the replacement.');await refreshOwner();}catch(error){toast(error.message);button.disabled=false;}};});
   document.querySelectorAll("[data-approve-request]").forEach(
     (b) =>
       (b.onclick = async () => {
