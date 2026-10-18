@@ -670,8 +670,8 @@ $('#copyInvite').onclick = async () => { try { await navigator.clipboard.writeTe
 $('#inviteMailForm').onsubmit = async event => {
   event.preventDefault();if(inviteBusy)return;inviteBusy=true;const form=event.currentTarget,button=form.querySelector('button');button.disabled=true;
   $('#inviteMailStatus').textContent='Checking Gmail connection…';
-  const appPassword=new FormData(form).get('appPassword');form.reset();
-  try {const result=await ownerRequest('/api/field/admin/invites/settings',{appPassword});$('#inviteMailStatus').textContent='Gmail connected: '+result.sender;}
+  const values=Object.fromEntries(new FormData(form));
+  try {const result=await ownerRequest('/api/field/admin/invites/settings',values);form.querySelector('[name="appPassword"]').value='';$('#inviteMailStatus').textContent='Gmail connected: '+result.sender;}
   catch(error){$('#inviteMailStatus').textContent=error.message;}
   finally{inviteBusy=false;button.disabled=false;}
 };
