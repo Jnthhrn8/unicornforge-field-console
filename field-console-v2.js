@@ -381,6 +381,14 @@ const a = JSON.parse(
 );
 for (const id of ["tuf", "strix"]) if (a[id]) $("#" + id + "Url").value = a[id];
 try {
+  const handoff = new URLSearchParams(location.search).get('tuf');
+  const address = handoff && new URL(handoff);
+  if (address?.protocol === 'https:' && /^[a-z0-9-]+\.tail[a-z0-9-]*\.ts\.net$/i.test(address.hostname) && address.port === '3211') {
+    $('#tufUrl').value = address.origin;
+    $('#rememberAddresses').checked = true;
+  }
+} catch {}
+try {
   nodes = JSON.parse(
     (!publicFieldAccess && sessionStorage.getItem("unicornforge.field.tokens")) || "[]",
   );
