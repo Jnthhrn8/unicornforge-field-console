@@ -310,7 +310,7 @@
             Connect this device to Tailscale, then continue with your owner account.
             Unicorn’s Entrance is separate from tester sign-in.
           </p>
-          <button id="ownerConsole" class="ghost">Unicorn, enter here</button>
+          <button id="ownerConsole" class="ghost">Unicorn, enter here</button><button id="ownerEnroll" class="ghost" hidden>Enroll administrator key</button>
         </details>
         <p id="ownerLoginStatus" role="status" aria-live="polite"></p>
         <a class="entry-text-link" href="https://forge.tetheredunicorn.com/#login">Looking for tester sign-in? Open Forge</a>
@@ -509,6 +509,7 @@
           <button id="openInvite" type="button">Send invite</button>
           <button id="toggleTraffic" class="danger">
             Stop all tester traffic</button
+          ><button id="addAdminKey" class="ghost">Add administrator key</button
           ><button id="refreshAdmin" class="ghost">Refresh now</button
           ><button id="refreshNtfyAdmin" class="ghost">Refresh ntfy channels</button
           ><button id="closeAdmin" class="ghost">Close</button>

@@ -297,6 +297,12 @@ async function adminToken(n) {
     })
   ).adminToken;
 }
+async function enrollAdministratorKey(n, token = '') {
+  const headers = token ? { 'X-Field-Admin': token } : {};
+  const options = await raw(n, '/api/field/fido/register-options', {}, headers);
+  const credential = await navigator.credentials.create({ publicKey: publicKey(options.options) });
+  return raw(n, '/api/field/fido/register-verify', { response: credentialJSON(credential) }, headers);
+}
 $("#login").onclick = login;
 $("#computer").onchange = () => {
   active = nodes.find((n) => n.id === $("#computer").value);
@@ -603,8 +609,24 @@ $("#ownerConsole").onclick = async () => {
     ownerTimer = setInterval(() => refreshOwner().catch(() => {}), 2000);
   } catch (e) {
     $("#ownerLoginStatus").textContent = e.message;
+    if (/No FIDO administrator key is enrolled/i.test(e.message)) $("#ownerEnroll").hidden = false;
     toast(e.message);
   }
+};
+$("#ownerEnroll").onclick = async () => {
+  const node = urls()[0];
+  if (!node) return $("#ownerLoginStatus").textContent = 'Enter your private Forge address under TUF first.';
+  try {
+    const result = await enrollAdministratorKey(node);
+    $("#ownerLoginStatus").textContent = `Administrator key enrolled (${result.credentialCount}/${result.maxCredentials}). Sign in, then add a backup key from the owner controls.`;
+    $("#ownerEnroll").hidden = true;
+  } catch (e) { $("#ownerLoginStatus").textContent = e.message; toast(e.message); }
+};
+$("#addAdminKey").onclick = async () => {
+  try {
+    const result = await enrollAdministratorKey(ownerNode, ownerToken);
+    toast(`Administrator key added (${result.credentialCount}/${result.maxCredentials})`);
+  } catch (e) { toast(e.message); }
 };
 $("#ownerFromChat").onclick = () => $("#ownerConsole").click();
 $("#refreshAdmin").onclick = refreshOwner;
