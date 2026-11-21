@@ -637,6 +637,17 @@ $("#addAdminKey").onclick = async () => {
   } catch (e) { toast(e.message); }
 };
 $("#ownerFromChat").onclick = () => $("#ownerConsole").click();
+$("#openPersonalForge").onclick = async () => {
+  const button = $("#openPersonalForge");
+  button.disabled = true;
+  try {
+    const result = await ownerRequest("/api/field/admin/personal-forge", {});
+    const target = new URL(result.url);
+    if (target.protocol !== "https:" || !target.hostname.endsWith(".ts.net") || target.port !== "3210") throw Error("Private Forge chat address is unavailable.");
+    location.assign(target.href);
+  } catch (error) { toast(error.message); }
+  finally { button.disabled = false; }
+};
 $("#refreshAdmin").onclick = refreshOwner;
 $("#refreshNtfyAdmin").onclick = async () => {
   const button = $("#refreshNtfyAdmin");
